@@ -1,0 +1,80 @@
+Read the original 'start here' webpage detailing the theory and practice of creating and using the usb-hid device
+Assume reader is familiar with the usual development cycle using PIC chips and MPLABv8.
+Assume reader has facility for programming PIC chips.
+
+* Create folder heirarchy
+%PROJECT%
+%PROJECT%\1.circuit
+%PROJECT%\2.bootloader
+%PROJECT%\3.device-firmware
+%PROJECT%\4.desktop-app
+
+* Install Microchip USB framework files
+Run microchip-application-libraries-v2011-07-14-windows-installer
+Install to %PROJECT%
+Deselect all optional components except USB demo projects, dont bother with downloading JRE
+Delete all folders except USB
+
+* Modify the circuit
+Copy eagle schematic "PIC18F4550 Ref3.sch" from zip as "%PROJECT%\1.circuit\PIC18F4550 Ref3-Mod.sch"
+Delete LED 'success' and 'failure'
+Move LED ready -> A1
+Move LED attached -> A2
+Add 2x switch-omron/10-XX
+Switch 1 - Reset
+Connect one side to ground, the other to !MCLR between the pin and pull-up.
+Switch 2 - User
+Connect one side to ground, the other to A0
+Connect a pull-up resistor to A0 and +5V
+Remove ICSP connector - saving space
+Add 40 way connector - overkill but it means an IDE cable can be used - con-3m/2540-
+
+* Modify the bootloader
+Copy content of folder "%PROJECT%\Microchip Solutions v2011-07-14\USB\Device - Bootloaders\HID\Firmware - PIC18 Non-J" to %PROJECT%\2.Bootloader
+Open workspace in MPLAB 8
+Ensure selected device is 18F4550
+In io_cfg.h:
+Uncomment the else if:  //#elif defined(YOUR_BOARD)
+Add the following code to the new block:
+[code]
+#define mInitAllLEDs()      LATA &= 0xF9; TRISA &= 0xF9;
+#define mLED_1              LATDbits.LATD0
+#define mLED_2              LATDbits.LATD1
+#define mLED_1_On()         mLED_1 = 1;
+#define mLED_2_On()         mLED_2 = 1;
+#define mLED_1_Off()        mLED_1 = 0;
+#define mLED_2_Off()        mLED_2 = 0;
+#define mLED_1_Toggle()     mLED_1 = !mLED_1;
+#define mLED_2_Toggle()     mLED_2 = !mLED_2;
+
+#define mInitAllSwitches()  TRISA |= 1
+#define sw2                 PORTAbits.RA0
+
+#define self_power          1
+#define usb_bus_sense		1
+[/code]
+
+In main.c:
+Delete/comment code for ADCON1
+Add the following code at the start of the main() procedure:
+mInitAllLEDs();
+mInitAllSwitches();
+Uncomment the else if: //#elif defined(YOUR_BOARD)
+Copy the device config flags from the 4550 block above
+
+In usbcfg.h:
+Comment out the block starting with the comment: "Make sure the proper hardware platform is being used"
+Uncomment //#define YOUR_BOARD
+Uncomment the line below: //#elif defined(YOUR_BOARD)
+
+Build & program the bootloader
+Ensure it's working by resetting with the USER switch pressed
+LEDs should flash alternately
+Bootloader app should detect the device
+
+* Modify the firmware
+Copy the content of the folder USB_GenericHID_Firmware_3_0_0_0 from the source zip to %PROJECT%\3.device_firmware
+
+
+
+* Modify the reference application
