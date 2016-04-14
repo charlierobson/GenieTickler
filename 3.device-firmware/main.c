@@ -219,10 +219,10 @@ void main(void)
     // Show that we are up and running
     mStatusLED0_on();
 	
-	sprintf(debugString, "USB Generic HID Reference Firmware 3_0_0_0 started");
+	sprintf(debugString, "Genie Tickler by SirMorris");
 	debugOut(debugString);
 
-	sprintf(debugString, "(C)2011 Simon Inns - http://www.waitingforfriday.com");
+	sprintf(debugString, "Based on work (C)2011 Simon Inns");
 	debugOut(debugString);
 	
 	sprintf(debugString, "USB Device Initialised.");
@@ -382,10 +382,10 @@ void processUsbCommands(void)
 			{
 				// The received data buffer is already filled by the USB stack
 
-			//	if (bulkRXFunction != NULL) bulkRXFunction();
+				if (bulkRXFunction != NULL) bulkRXFunction();
 
-	            sprintf(debugString, "Received bulk packet %d of %d\n", bulkReceivePacketCounter + 1, bulkReceiveExpectedPackets);
-				debugOut(debugString);
+	            //sprintf(debugString, "%d/%d\n", bulkReceivePacketCounter + 1, bulkReceiveExpectedPackets);
+				//debugOut(debugString);
 
 				bulkReceivePacketCounter++;
 
