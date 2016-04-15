@@ -88,7 +88,7 @@ bootloader to use more program memory.
 // see the compiler documentation, and/or click "Help --> Topics..." and then 
 // select "PIC18 Config Settings" in the Language Tools section.
 
-#if defined(PIC18F4550_PICDEM_FS_USB) || defined(YOUR_BOARD) // Configuration bits for PICDEM FS USB Demo Board
+#if defined(SMB_BOARD) || defined(PIC18F4550_PICDEM_FS_USB)		// Configuration bits for PICDEM FS USB Demo Board
  	#if defined(__18F4550) || defined(__18F4553)
         #pragma config PLLDIV   = 5         // (20 MHz crystal on PICDEM FS USB board)
         #pragma config CPUDIV   = OSC1_PLL2	
@@ -115,7 +115,7 @@ bootloader to use more program memory.
         #pragma config STVREN   = ON
         #pragma config LVP      = OFF
 //      #pragma config ICPRT    = OFF       // Dedicated In-Circuit Debug/Programming
-        #pragma config XINST    = OFF      	// Extended Instruction Set
+        #pragma config XINST    = OFF       // Extended Instruction Set
         #pragma config CP0      = OFF
         #pragma config CP1      = OFF
 //      #pragma config CP2      = OFF
@@ -220,12 +220,12 @@ void interrupt_at_low_vector(void)
  * Note:            None
  *****************************************************************************/
 void main(void)
-{
-	ADCON1 = 0x0F;      // All pins are digital
-	CMCON |= 7;         // Turn off comparators
+{   
+    ADCON1 = 0x0F;
 
-	mInitAllLEDs();
-	mInitAllSwitches();
+#if defined(SMB_BOARD)
+	mInitHWSMB();
+#endif
 
     //Check Bootload Mode Entry Condition
 	if(sw2 == 1)	//This example uses the sw2 I/O pin to determine if the device should enter the bootloader, or the main application code
@@ -241,6 +241,7 @@ void main(void)
 		ClrWdt();	
 	    USBTasks();         					// Need to call USBTasks() periodically
 	    										// it handles SETUP packets needed for enumeration
+
 		BlinkUSBStatus();
 		
 	    if((usb_device_state == CONFIGURED_STATE) && (UCONbits.SUSPND != 1))

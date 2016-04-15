@@ -44,6 +44,7 @@
 #define MODE_PP                 _PPBM0
 #define UCFG_VAL                _PUEN|_TRINT|_FS|MODE_PP
 
+#define SMB_BOARD
 
 /* Make sure the proper hardware platform is being used
 #if defined(__18F4550) || defined(__18F4455) || defined(__18F4450) || defined(__18F2550) || defined(__18F2455) || defined(__18F2450) || defined(__18F2458) || defined(__18F2553) || defined(__18F4453) || defined(__18F4553)
@@ -53,8 +54,7 @@
 	#define LOW_PIN_COUNT_USB_DEVELOPMENT_KIT
 #endif
 */
-#define YOUR_BOARD
-
+//#define YOUR_BOARD
 
 #if defined(PIC18F4550_PICDEM_FS_USB)
 //    #define USE_SELF_POWER_SENSE_IO
@@ -65,9 +65,10 @@
 
 #elif defined(LOW_PIN_COUNT_USB_DEVELOPMENT_KIT)
 
+#elif defined(SMB_BOARD)
 
 /*If using the YOUR_BOARD selection, uncomment below section as appropriate for your hardware*/
-#elif defined(YOUR_BOARD)
+//#elif defined(YOUR_BOARD)
 	//#define USE_SELF_POWER_SENSE_IO	//See MCHPFSUSB Firmware User's Guide
    	//#define USE_USB_BUS_SENSE_IO		//(DS51679) for more details about these features.
 

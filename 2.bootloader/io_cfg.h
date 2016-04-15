@@ -126,6 +126,8 @@
 /********************************************************************/
 /********************************************************************/
 
+
+
 #elif defined(LOW_PIN_COUNT_USB_DEVELOPMENT_KIT)
 	//Uncomment the below line(s) if the hardware supports it and
 	//it is desireable to use one or both of the features.
@@ -184,30 +186,34 @@
     /** POT ************************************************************/
     #define mInitPOT()          {TRISBbits.TRISB4=1;ADCON0=0x29;ADCON1=0;ADCON2=0x3E;ADCON2bits.ADFM = 1;}
 
+
+#elif defined (SMB_BOARD)
+
+	#define mInitHWSMB() 		LATC = 0; TRISC = 0b11111001;
+
+	#define sw2                 PORTCbits.RC0
+    #define mLED_1              LATCbits.LATC1
+    #define mLED_2              LATCbits.LATC2
+
+    #define mInitAllSwitches()
+    #define mInitAllLEDs()
+
+	#define usb_bus_sense       1
+	#define self_power          1
+
+    #define mLED_1_On()         mLED_1 = 1;
+    #define mLED_2_On()         mLED_2 = 1;
+    
+    #define mLED_1_Off()        mLED_1 = 0;
+    #define mLED_2_Off()        mLED_2 = 0;
+
+    #define mLED_1_Toggle()     mLED_1 = !mLED_1;
+    #define mLED_2_Toggle()     mLED_2 = !mLED_2;
+
+
 //Uncomment below if using the YOUR_BOARD hardware platform
-#elif defined(YOUR_BOARD)
-
+//#elif defined(YOUR_BOARD)
 //Add your hardware specific I/O pin mapping here
-
-#define usb_bus_sense       1
-#define self_power          1
-
-#define mInitAllLEDs()      LATA &= 0xF9; TRISA &= 0xF9;
-
-#define mLED_1              LATAbits.LATA1
-#define mLED_2              LATAbits.LATA2
-
-#define mLED_1_On()         mLED_1 = 1;
-#define mLED_2_On()         mLED_2 = 1;
-
-#define mLED_1_Off()        mLED_1 = 0;
-#define mLED_2_Off()        mLED_2 = 0;
-
-#define mLED_1_Toggle()     mLED_1 = !mLED_1;
-#define mLED_2_Toggle()     mLED_2 = !mLED_2;
-
-#define mInitAllSwitches()  TRISA |= 1;
-#define sw2                 PORTAbits.RA0
 
 #else
     #error Not a supported board (yet), add I/O pin mapping in __FILE__, line __LINE__
