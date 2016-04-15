@@ -38,8 +38,6 @@ void ShiftOut(int address)
 
 void Write(int address, unsigned char data)
 {
-	return;
-
 	ShiftOut(address);
 
 	TRISD = 0x00;

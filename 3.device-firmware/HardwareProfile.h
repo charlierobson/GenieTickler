@@ -28,25 +28,8 @@
 
 // (This section is the set of definitions required by the MCHPFSUSB framework.)
 
-// Uncomment the following define if you wish to use the self-power sense feature 
-// and define the port, pin and tris for the power sense pin below:
-// #define USE_SELF_POWER_SENSE_IO
-#define tris_self_power     TRISAbits.TRISA2
-#if defined(USE_SELF_POWER_SENSE_IO)
-	#define self_power          PORTAbits.RA2
-#else
-	#define self_power          1
-#endif
-
-// Uncomment the following define if you wish to use the bus-power sense feature 
-// and define the port, pin and tris for the power sense pin below:
-//#define USE_USB_BUS_SENSE_IO
-#define tris_usb_bus_sense  TRISAbits.TRISA1
-#if defined(USE_USB_BUS_SENSE_IO)
-	#define USB_BUS_SENSE       PORTAbits.RA1
-#else
-	#define USB_BUS_SENSE       1
-#endif
+#define self_power          1
+#define USB_BUS_SENSE       1
 
 // Uncomment the following line to make the output HEX of this project work with the MCHPUSB Bootloader    
 //#define PROGRAMMABLE_WITH_USB_MCHPUSB_BOOTLOADER
@@ -94,20 +77,19 @@
 #define DEBUGON
 
 // PIC to hardware pin mapping and control macros
-#if defined(__18F4550)
-	#define mInitStatusLeds()	LATA &= 0xF9; TRISA &= 0xF9;
 
-    #define mStatusLED0			LATAbits.LATA1
-    #define mStatusLED1			LATAbits.LATA2
-#endif
+#define mInitStatusLeds()	LATC &= 0xF9; TRISC &= 0xF9;
 
-    #define mStatusLED0_on()	mStatusLED0 = 1;
-    #define mStatusLED1_on()	mStatusLED1 = 1;
-    
-    #define mStatusLED0_off()	mStatusLED0 = 0;
-    #define mStatusLED1_off()	mStatusLED1 = 0;
-    
-    #define mStatusLED0_Toggle()     mStatusLED0 = !mStatusLED0;
-    #define mStatusLED1_Toggle()     mStatusLED1 = !mStatusLED1;
+#define mStatusLED0			LATCbits.LATC1
+#define mStatusLED1			LATCbits.LATC2
+
+#define mStatusLED0_on()	mStatusLED0 = 1;
+#define mStatusLED1_on()	mStatusLED1 = 1;
+
+#define mStatusLED0_off()	mStatusLED0 = 0;
+#define mStatusLED1_off()	mStatusLED1 = 0;
+
+#define mStatusLED0_Toggle()     mStatusLED0 = !mStatusLED0;
+#define mStatusLED1_Toggle()     mStatusLED1 = !mStatusLED1;
 
 #endif

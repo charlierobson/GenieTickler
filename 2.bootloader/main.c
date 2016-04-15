@@ -115,11 +115,7 @@ bootloader to use more program memory.
         #pragma config STVREN   = ON
         #pragma config LVP      = OFF
 //      #pragma config ICPRT    = OFF       // Dedicated In-Circuit Debug/Programming
-#if defined(YOUR_BOARD)
-        #pragma config XINST    = ON       	// Extended Instruction Set
-#else
         #pragma config XINST    = OFF      	// Extended Instruction Set
-#endif
         #pragma config CP0      = OFF
         #pragma config CP1      = OFF
 //      #pragma config CP2      = OFF

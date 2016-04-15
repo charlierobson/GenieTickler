@@ -423,7 +423,8 @@ namespace USB_Generic_HID_reference_application
                         outputBuffer[i + 1] = data[offset];
                         ++offset;
                     }
-
+					outputBuffer[1] = (byte)packetCounter;
+					
                     _logger(string.Format("BlockWrite: Writing packet {0}/{1} [{2}]", packetCounter + 1, totalPackets, packetLength));
 
                     success = writeRawReportToDevice(outputBuffer);

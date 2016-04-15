@@ -216,17 +216,17 @@ void main(void)
 	// Initialise the debug log functions
     debugInitialise();
     
-    // Show that we are up and running
-    mStatusLED0_on();
-	
 	sprintf(debugString, "Genie Tickler by SirMorris");
 	debugOut(debugString);
 
 	sprintf(debugString, "Based on work (C)2011 Simon Inns");
 	debugOut(debugString);
 	
-	sprintf(debugString, "USB Device Initialised.");
+	sprintf(debugString, "USB Device Initialised. But WTF?");
 	debugOut(debugString);
+	
+    // Show that we are up and running
+    mStatusLED0_on();
 	
 	// Main processing loop
     while(1)
@@ -253,9 +253,8 @@ static void initialisePic(void)
     ADCON1 = 0x0F;
 	CMCON |= 7;
 
-	TRISA = 0b11111001;
-
-	// Configure ports as inputs as we don't want to hurt the genie bus
+	// Configure ports as inputs as we don't want to hurt the genie bus	
+	TRISA = 0b11111111;
 	TRISB = 0b11111111;
 	TRISC = 0b11111111;
 	TRISD = 0b11111111;
@@ -268,26 +267,9 @@ static void initialisePic(void)
 	PORTD = 0b00000000;
 	PORTE = 0b00000000;
 
-	// If you have a VBUS sense pin (for self-powered devices when you
-	// want to detect if the USB host is connected) you have to specify
-	// your input pin in HardwareProfile.h
-    #if defined(USE_USB_BUS_SENSE_IO)
-    	tris_usb_bus_sense = INPUT_PIN;
-    #endif
-    
-    // In the case of a device which can be both self-powered and bus-powered
-    // the device must respond correctly to a GetStatus (device) request and
-    // tell the host how it is currently powered.
-    //
-    // To do this you must device a pin which is high when self powered and low
-    // when bus powered and define this in HardwareProfile.h
-    #if defined(USE_SELF_POWER_SENSE_IO)
-    	tris_self_power = INPUT_PIN;
-    #endif
-
     // Application specific initialisation
     applicationInit();
-    
+
     // Initialise the USB device
     USBDeviceInit();
 }
@@ -298,6 +280,8 @@ void applicationInit(void)
 	// Initialise the status LEDs
 	mInitStatusLeds();
 	
+	mStatusLED0_on();
+
     // Initialize the variable holding the USB handle for the last transmission
     USBOutHandle = 0;
     USBInHandle = 0;
@@ -344,7 +328,7 @@ void processUsbCommands(void)
 	}
 	
 	// We are configured, show state in LED1
-	mStatusLED1_on()
+	mStatusLED1_on();
 
 	// Check if data was received from the host.
     if(!HIDRxHandleBusy(USBOutHandle))
@@ -384,11 +368,7 @@ void processUsbCommands(void)
 
 				if (bulkRXFunction != NULL) bulkRXFunction();
 
-	            //sprintf(debugString, "%d/%d\n", bulkReceivePacketCounter + 1, bulkReceiveExpectedPackets);
-				//debugOut(debugString);
-
 				bulkReceivePacketCounter++;
-
 				if (bulkReceivePacketCounter == bulkReceiveExpectedPackets)
 				{
 					bulkReceiveFlag = FLAG_FALSE;
@@ -449,8 +429,8 @@ void processUsbCommands(void)
 
 	            case 0x82:	// BLOCK WRITE -> GENIE
 				{
-					gAddress = (ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
-					gLength = (ReceivedDataBuffer[3] << 8) + ReceivedDataBuffer[4];
+					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
+					gLength = ((int)ReceivedDataBuffer[3] << 8) + ReceivedDataBuffer[4];
 
 		            sprintf(debugString, "%04X <= [%04x]", gAddress, gLength);
 					debugOut(debugString);
@@ -464,6 +444,8 @@ void processUsbCommands(void)
             	break;
 
 	            default:	// Unknown command received
+		            sprintf(debugString, "Unknown command block type: %02X", ReceivedDataBuffer[0]);
+					debugOut(debugString);
 	           		break;
 			}
 		}
