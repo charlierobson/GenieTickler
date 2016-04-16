@@ -86,23 +86,36 @@ namespace USB_Generic_HID_reference_application
         // Listener for USB events
         private void usbEvent_receiver(object o, EventArgs e)
         {
-            ThreadSafeDebugUpdate(string.Format("object: {0}  Args: {1}  Att? {2}", o, e, _theReferenceUsbDevice.DeviceAttached));
-
             // Check the status of the USB device and update the form accordingly
             usbToolStripStatusLabel.Text = _theReferenceUsbDevice.DeviceAttached ? "USB Device is attached" : "USB Device is detached";
         }
 
+		private object _debugCollectorLock = new object();
+		
+		private string GetDebugString()
+		{
+			lock(_debugCollectorLock)
+			{
+				// Collect the debug information from the device
+				return _theReferenceUsbDevice.collectDebug();
+			}
+		}
         // Collect debug timer has ticked
         private void debugCollectionTimer_Tick(object sender, EventArgs e)
         {
-            // Collect the debug information from the device
-            var debugString = _theReferenceUsbDevice.collectDebug();
+			lock(_debugCollectorLock)
+			{
+				// Collect the debug information from the device
+				var debugText = GetDebugString();
 
-            // Display the debug information
-            if (debugString != String.Empty)
-            {
-                debugTextBox.AppendText(debugString);
-            }
+				// Display the debug information
+				if (debugText != String.Empty)
+				{
+					debugText.TrimEnd();
+					debugText += "\n";
+					debugTextBox.AppendText(debugText);
+				}
+			}
         }
 
         private readonly CheckBox[] _addressBits = new CheckBox[16];
@@ -202,14 +215,38 @@ namespace USB_Generic_HID_reference_application
             Controls.Add(testMemFill);
         }
 
+		protected override void OnFormClosing(FormClosingEventArgs e)
+		{
+			base.OnFormClosing(e);
+			
+			StopCurrentTest();
+
+            _theReferenceUsbDevice.usbEvent -= usbEvent_receiver;
+
+			_stopSignal.Close();
+		}
+		
         private void MemFill()
         {
             var address = DecodeBits(_addressBits);
 
             StopCurrentTest();
+
+            if (!_theReferenceUsbDevice.DeviceAttached)
+            {
+               return;
+            }
+
             StartTest(() =>
             {
+				byte clock = 0;
                 var data = new byte[240];
+				
+				for(var i = 0; i < 240; ++i)
+				{
+					data[i] = (byte)((i / 2) | clock);
+					clock ^= 0x80;
+				}
                 _theReferenceUsbDevice.BlockWrite(address, data);
             });
         }
@@ -218,11 +255,11 @@ namespace USB_Generic_HID_reference_application
         {
             StopCurrentTest();
 
-            //if (!_theReferenceUsbDevice.DeviceAttached)
-            //{
-            //    oCheckBox.Checked = false;
-            //    return;
-            //}
+            if (!_theReferenceUsbDevice.DeviceAttached)
+            {
+               testBtnToggle.Checked = false;
+               return;
+            }
 
             if (testBtnToggle.Checked)
             {
@@ -247,11 +284,11 @@ namespace USB_Generic_HID_reference_application
         {
             StopCurrentTest();
 
-            //if (!_theReferenceUsbDevice.DeviceAttached)
-            //{
-            //    oCheckBox.Checked = false;
-            //    return;
-            //}
+            if (!_theReferenceUsbDevice.DeviceAttached)
+            {
+               testBtnToggle.Checked = false;
+               return;
+            }
 
             if (testBtnToggle.Checked)
             {
@@ -276,11 +313,11 @@ namespace USB_Generic_HID_reference_application
         {
             StopCurrentTest();
 
-            //if (!_theReferenceUsbDevice.DeviceAttached)
-            //{
-            //    oCheckBox.Checked = false;
-            //    return;
-            //}
+            if (!_theReferenceUsbDevice.DeviceAttached)
+            {
+               testBtnToggle.Checked = false;
+               return;
+            }
 
             if (testBtnToggle.Checked)
             {

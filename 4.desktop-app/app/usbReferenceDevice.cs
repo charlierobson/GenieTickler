@@ -403,33 +403,26 @@ namespace USB_Generic_HID_reference_application
             outputBuffer[4] = (byte)(data.Length / 256);
             outputBuffer[5] = (byte)(data.Length & 255);
 
-            _logger(string.Format("BlockWrite: Data length {0}", data.Length));
+            _logger(string.Format("BlockWrite: Data length {0} (${1:X4})", data.Length, data.Length));
 
             bool success = writeRawReportToDevice(outputBuffer);
             if (success)
             {
                 var offset = 0;
                 var bytesRemaining = data.Length;
-                var totalPackets = (bytesRemaining + 63) / 64;
+                var totalPackets = (data.Length + 63) / 64;
 
-                for (int packetCounter = 0; packetCounter < totalPackets && success; packetCounter++)
+				outputBuffer[0] = 0;                
+
+                for (var packet = 0; packet < totalPackets && success; ++packet)
                 {
-                    outputBuffer[0] = 0;
-
-                    int packetLength = bytesRemaining > 63 ? 64 : bytesRemaining;
-
-                    for(int i = 0; i < packetLength; ++i)
-                    {
-                        outputBuffer[i + 1] = data[offset];
-                        ++offset;
-                    }
-					outputBuffer[1] = (byte)packetCounter;
-					
-                    _logger(string.Format("BlockWrite: Writing packet {0}/{1} [{2}]", packetCounter + 1, totalPackets, packetLength));
-
-                    success = writeRawReportToDevice(outputBuffer);
-
+					var packetLength = bytesRemaining > 63 ? 64 : bytesRemaining;
                     bytesRemaining -= packetLength;
+
+					Array.Copy(data, offset, outputBuffer, 1, packetLength);
+					offset += packetLength;
+
+					success = writeRawReportToDevice(outputBuffer);
                 }
             }
 
