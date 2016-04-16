@@ -410,19 +410,27 @@ namespace USB_Generic_HID_reference_application
             {
                 var offset = 0;
                 var bytesRemaining = data.Length;
-                var totalPackets = (data.Length + 63) / 64;
+                var totalPackets = (bytesRemaining + 63) / 64;
 
-				outputBuffer[0] = 0;                
+				var packets = new byte[totalPackets][];
 
+                for (var packet = 0; packet < totalPackets; ++packet)
+				{
+					var packetLength = bytesRemaining > 63 ? 64 : bytesRemaining;
+
+					var p = new  byte[65]; // fixed length packet containing variable length data
+					packets[packet] = p;
+
+					p[0] = 0;
+					Array.Copy(data, offset, p, 1, packetLength);
+
+                    bytesRemaining -= packetLength;
+					offset += packetLength;
+				}
+				
                 for (var packet = 0; packet < totalPackets && success; ++packet)
                 {
-					var packetLength = bytesRemaining > 63 ? 64 : bytesRemaining;
-                    bytesRemaining -= packetLength;
-
-					Array.Copy(data, offset, outputBuffer, 1, packetLength);
-					offset += packetLength;
-
-					success = writeRawReportToDevice(outputBuffer);
+                    success = writeRawReportToDevice(packets[packet]);
                 }
             }
 
