@@ -196,10 +196,11 @@ int gAddress;
 int gLength;
 
 // function pointer to bulk reception processor
-void (*bulkRXFunction)(void) = NULL;
+void (*bulkFunction)(void) = NULL;
 
 extern void Write(int address, unsigned char data);
 extern unsigned char Read(int address);
+extern void InitInterfacing(void);
 
 
 // Main program entry point
@@ -222,7 +223,7 @@ void main(void)
 	sprintf(debugString, "Based on work (C)2011 Simon Inns");
 	debugOut(debugString);
 	
-	sprintf(debugString, "USB Device Initialised. But WTF?");
+	sprintf(debugString, "USB Device Initialised");
 	debugOut(debugString);
 	
     // Show that we are up and running
@@ -286,6 +287,8 @@ void applicationInit(void)
     USBOutHandle = 0;
     USBInHandle = 0;
 
+	InitInterfacing();
+
 	// 115200 with 20mhz crystal w/PLL : FOSC = 48mhz
 	OpenUSART(	(USART_TX_INT_OFF | USART_RX_INT_OFF |
 				 USART_ASYNCH_MODE | USART_EIGHT_BIT | USART_CONT_RX |
@@ -306,6 +309,19 @@ void MemWriteMultiple()
 	for (i = 0; i < count; ++i, ++gAddress)
 	{
 		Write(gAddress, ReceivedDataBuffer[i]);
+	}
+}
+
+void MemReadMultiple()
+{
+	int i;
+	int count = (gLength > 63) ? 64 : gLength;
+
+	gLength -= count;
+
+	for (i = 0; i < count; ++i, ++gAddress)
+	{
+		ToSendDataBuffer[i] = Read(gAddress);
 	}
 }
 
@@ -341,38 +357,34 @@ void processUsbCommands(void)
 		    // If we are bulk sending, check that we are not busy and send the next packet
 		    if (bulkSendFlag == FLAG_TRUE && !HIDTxHandleBusy(USBInHandle))
 		    {
-				// Send the next packet
-				expectedData = bulkSendPacketCounter;
-	            
-	            for (bufferPointer = 0; bufferPointer < 64; bufferPointer++)
-	            {
-		            	ToSendDataBuffer[bufferPointer] = expectedData;
-		        }
-		        
+				// bulk function will fill the buffer
+				if (bulkFunction != NULL) bulkFunction();
+
 		        // Transmit the response to the host
                 USBInHandle = HIDTxPacket(HID_EP,(BYTE*)&ToSendDataBuffer[0],64);
 
-				bulkSendPacketCounter++; // Next packet
-				
-				// Are we done yet?
+				++bulkSendPacketCounter;
 				if (bulkSendPacketCounter == bulkSendExpectedPackets)
 				{
 					// All done, indicate success and go back to command mode
 					bulkSendFlag = FLAG_FALSE;
+					bulkFunction = NULL;
+
+		            sprintf(debugString, "Bulk op complete");
+					debugOut(debugString);
 				}	
 			}
 			
 			if (bulkReceiveFlag == FLAG_TRUE)
 			{
 				// The received data buffer is already filled by the USB stack
-
-				if (bulkRXFunction != NULL) bulkRXFunction();
+				if (bulkFunction != NULL) bulkFunction();
 
 				bulkReceivePacketCounter++;
 				if (bulkReceivePacketCounter == bulkReceiveExpectedPackets)
 				{
 					bulkReceiveFlag = FLAG_FALSE;
-					bulkRXFunction = NULL;
+					bulkFunction = NULL;
 
 		            sprintf(debugString, "Bulk op complete");
 					debugOut(debugString);
@@ -435,12 +447,28 @@ void processUsbCommands(void)
 		            sprintf(debugString, "%04X <= [%04x]", gAddress, gLength);
 					debugOut(debugString);
 
-					bulkRXFunction = MemWriteMultiple;
+					bulkFunction = MemWriteMultiple;
 
 		            bulkReceiveExpectedPackets = (gLength + 63) / 64;
 		            bulkReceivePacketCounter = 0;
 		            bulkReceiveFlag = FLAG_TRUE;
 		        }
+            	break;
+
+	            case 0x83:	// BLOCK READ <- GENIE
+				{
+					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
+					gLength = ((int)ReceivedDataBuffer[3] << 8) + ReceivedDataBuffer[4];
+
+		            sprintf(debugString, "%04X => [%04x]", gAddress, gLength);
+					debugOut(debugString);
+
+					bulkFunction = MemReadMultiple;
+
+		            bulkSendExpectedPackets = (gLength + 63) / 64;
+		            bulkSendPacketCounter = 0;
+		            bulkSendFlag = FLAG_TRUE;
+				}
             	break;
 
 	            default:	// Unknown command received

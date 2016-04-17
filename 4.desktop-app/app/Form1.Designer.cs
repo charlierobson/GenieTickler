@@ -71,6 +71,7 @@ namespace USB_Generic_HID_reference_application
             this.debugTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.debugTextBox.Size = new System.Drawing.Size(423, 90);
             this.debugTextBox.TabIndex = 21;
+            this.debugTextBox.Font = new System.Drawing.Font("Courier New", 8);
             // 
             // debugCollectionTimer
             // 

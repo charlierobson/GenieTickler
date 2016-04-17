@@ -435,8 +435,52 @@ namespace USB_Generic_HID_reference_application
             }
 
             if (!success) _logger("BlockWrite: Bulk send to device failed");
-
-            return true;
+			return success;
         }
-    }
+
+        public bool BlockRead(int address, byte[] data)
+		{
+            var buffer = new byte[65];
+
+            buffer[0] = 0;
+            buffer[1] = 0x83; // - block read from genie
+            buffer[2] = (byte)(address / 256);
+            buffer[3] = (byte)(address & 255);
+            buffer[4] = (byte)(data.Length / 256);
+            buffer[5] = (byte)(data.Length & 255);
+
+            _logger(string.Format("BlockRead: Data length {0} (${1:X4})", data.Length, data.Length));
+
+            bool success = writeRawReportToDevice(buffer);
+            if (success)
+            {
+                var totalPackets = (data.Length + 63) / 64;
+
+				var packets = new byte[totalPackets][];
+
+                for (var packet = 0; packet < totalPackets && success; ++packet)
+                {
+					var p =  new byte[65];
+					packets[packet] = p;
+
+                    success = readSingleReportFromDevice(ref p);
+                }
+
+				var remaining = data.Length;
+				var offset = 0;
+				
+                for (var packet = 0; packet < totalPackets && success; ++packet)
+                {
+					var length = (remaining > 63) ? 64 : remaining;
+					remaining -= length;
+					
+					Array.Copy(packets[packet], 0, data, offset, length);
+					offset += 64;
+				}
+			}
+
+            if (!success) _logger("BlockRead: Bulk read from device failed");
+            return success;
+		}
+	}
 }

@@ -1,11 +1,5 @@
 #include <delays.h>
 
-#define ASSERT_MEMRQ
-#define DEASSERT_MEMRQ
-
-#define ASSERT_WR
-#define DEASSERT_WR
-
 #define SHIFTCLK LATBbits.LATB2
 #define SHIFTDAT LATBbits.LATB3
 
@@ -18,9 +12,13 @@
 // 12mhz instruction clock
 #define delayMicrosec() Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();
 
-void InitShifter()
+void InitInterfacing()
 {
 	SHIFTCLK = 0;
+
+	// RD, WR, MEM & IORQ = 1, SHIFTCLK,DATA = 0
+	LATB = 0xF0;
+	TRISB = 0x03;
 }
 
 void ShiftOut(int address)
@@ -49,7 +47,7 @@ void Write(int address, unsigned char data)
 	NWR = 1;
 	NMREQ = 1;
 
-	//TRISD = 0xFF;
+	TRISD = 0xFF;
 }
 
 
