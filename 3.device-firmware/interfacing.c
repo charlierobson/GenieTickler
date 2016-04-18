@@ -12,6 +12,7 @@
 
 // 12mhz instruction clock
 #define delayMicrosec() Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();
+#define delayHalfMicrosec() Nop();Nop();Nop();Nop();Nop();Nop();
 
 void InitInterfacing()
 {
@@ -20,6 +21,8 @@ void InitInterfacing()
 	// RD, WR, MEM & IORQ = 1, SHIFTCLK,DATA = 0
 	LATB = 0xF0;
 	TRISB = 0x03;
+
+	TRISD = 0xff;
 }
 
 void ShiftOut(unsigned int address)
@@ -71,16 +74,32 @@ unsigned char Read(unsigned int address)
 }
 
 
-unsigned int businessToggleRD(unsigned int counter)
+unsigned int businessContRD(void)
 {
 	NMREQ = 0;
-	NRD = counter & 1;
+	NRD = 0;
+	delayMicrosec();
+	NRD = 1;
+	NMREQ = 1;
 	return VERY_BUSY;
 }
 
-unsigned int businessToggleWR(unsigned int counter)
+unsigned int businessContWR()
 {
 	NMREQ = 0;
-	NWR = counter & 1;
+	NWR = 0;
+	delayMicrosec();
+	NWR = 1;
+	NMREQ = 1;
+	return VERY_BUSY;
+}
+
+int address;
+unsigned int businessExerciseAddr()
+{
+	++address;
+	ShiftOut(address);
+	MREQ = 0;
+	MREQ = 1;
 	return VERY_BUSY;
 }

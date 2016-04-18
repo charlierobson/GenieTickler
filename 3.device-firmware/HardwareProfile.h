@@ -78,10 +78,13 @@
 
 // PIC to hardware pin mapping and control macros
 
-#define mInitStatusLeds()	LATC &= 0xF9; TRISC &= 0xF9;
-
+#define mInitStatusLeds()	LATC &= 0b11111001; TRISC &= 0b11111001;
 #define mStatusLED0			LATCbits.LATC1
 #define mStatusLED1			LATCbits.LATC2
+
+#define mInitScopeTaps()	TRISA |= 0b00001000;
+#define mScopeTrigger		LATAbits.LATA3
+
 
 #define mStatusLED0_on()	mStatusLED0 = 1;
 #define mStatusLED1_on()	mStatusLED1 = 1;

@@ -204,14 +204,13 @@ extern unsigned char Read(unsigned int address);
 extern void InitInterfacing(void);
 
 unsigned int blinkCounter;
-unsigned int busyLevel = NOT_BUSY;
 
-unsigned int Unbusy(unsigned int counter)
+unsigned int Unbusy()
 {
 	return NOT_BUSY;
 }
 
-unsigned int (*busyFn)(unsigned int) = Unbusy;
+unsigned int (*busyFn)(void) = Unbusy;
 
 
 // Main program entry point
@@ -244,7 +243,8 @@ void main(void)
     while(1)
     {
 		++blinkCounter;
-		mStatusLED0 = (blinkCounter & busyFn(blinkCounter)) != 0;
+		mScopeTrigger = (blinkCounter & 1024) != 0;
+		mStatusLED0 = (blinkCounter & busyFn()) != 0;
 
         #if defined(USB_POLLING)
 			// If we are in polling mode the USB device tasks must be processed here
@@ -294,7 +294,8 @@ void applicationInit(void)
 {
 	// Initialise the status LEDs
 	mInitStatusLeds();
-	
+	mInitScopeTaps();
+
 	mStatusLED0_on();
 
     // Initialize the variable holding the USB handle for the last transmission
@@ -310,8 +311,9 @@ void applicationInit(void)
 }
 
 
-extern unsigned int businessToggleRD(unsigned int);
-extern unsigned int businessToggleWR(unsigned int);
+extern unsigned int businessContRD();
+extern unsigned int businessContWR();
+extern unsigned int businessExerciseAddr();
 
 
 // bulk handlers
@@ -488,14 +490,31 @@ void processUsbCommands(void)
 				}
             	break;
 
+				case 0xE0:
+					busyFn = businessContRD;
+					InitInterfacing();
+					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
+					ShiftOut(gAddress);
+					TRISD = 0xFF; // should be input as genie will be driving the bus - ding ding!
+					break;
+
+				case 0xE1:
+					busyFn = businessContWR;
+					InitInterfacing();
+					LATD = 0xff;
+					TRISD = 0x00;
+					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
+					ShiftOut(gAddress);
+					break;
+
+				case 0xE2:
+					busyFn = businessExerciseAddr;
+					InitInterfacing();
+					break;
+
 				case 0xF0:
 					InitInterfacing();
 					busyFn = Unbusy;
-					break;
-				case 0xF1:
-					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
-					ShiftOut(gAddress);
-					busyFn = businessToggleRD;
 					break;
 
 	            default:	// Unknown command received
