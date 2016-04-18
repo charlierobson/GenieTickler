@@ -39,6 +39,7 @@ namespace USB_Generic_HID_reference_application
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBoxData = new System.Windows.Forms.GroupBox();
             this.listBoxData = new System.Windows.Forms.ListBox();
+            this.flowLayoutPanelRadioChex = new System.Windows.Forms.FlowLayoutPanel();
             this.statusStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBoxData.SuspendLayout();
@@ -48,7 +49,7 @@ namespace USB_Generic_HID_reference_application
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.usbToolStripStatusLabel});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 415);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 414);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(453, 22);
             this.statusStrip1.SizingGrip = false;
@@ -64,14 +65,14 @@ namespace USB_Generic_HID_reference_application
             // debugTextBox
             // 
             this.debugTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.debugTextBox.Font = new System.Drawing.Font("Courier New", 8F);
             this.debugTextBox.Location = new System.Drawing.Point(3, 16);
             this.debugTextBox.Multiline = true;
             this.debugTextBox.Name = "debugTextBox";
             this.debugTextBox.ReadOnly = true;
             this.debugTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.debugTextBox.Size = new System.Drawing.Size(423, 90);
+            this.debugTextBox.Size = new System.Drawing.Size(423, 89);
             this.debugTextBox.TabIndex = 21;
-            this.debugTextBox.Font = new System.Drawing.Font("Courier New", 8);
             // 
             // debugCollectionTimer
             // 
@@ -87,7 +88,7 @@ namespace USB_Generic_HID_reference_application
             this.groupBox2.Controls.Add(this.debugTextBox);
             this.groupBox2.Location = new System.Drawing.Point(12, 290);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(429, 109);
+            this.groupBox2.Size = new System.Drawing.Size(429, 108);
             this.groupBox2.TabIndex = 22;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Device Debug Output";
@@ -115,11 +116,22 @@ namespace USB_Generic_HID_reference_application
             this.listBoxData.Size = new System.Drawing.Size(423, 84);
             this.listBoxData.TabIndex = 0;
             // 
+            // flowLayoutPanelRadioChex
+            // 
+            this.flowLayoutPanelRadioChex.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.flowLayoutPanelRadioChex.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.flowLayoutPanelRadioChex.Location = new System.Drawing.Point(12, 107);
+            this.flowLayoutPanelRadioChex.Name = "flowLayoutPanelRadioChex";
+            this.flowLayoutPanelRadioChex.Size = new System.Drawing.Size(429, 67);
+            this.flowLayoutPanelRadioChex.TabIndex = 24;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(453, 437);
+            this.ClientSize = new System.Drawing.Size(453, 436);
+            this.Controls.Add(this.flowLayoutPanelRadioChex);
             this.Controls.Add(this.groupBoxData);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.statusStrip1);
@@ -147,6 +159,7 @@ namespace USB_Generic_HID_reference_application
         private GroupBox groupBox2;
         private GroupBox groupBoxData;
         private ListBox listBoxData;
+        private FlowLayoutPanel flowLayoutPanelRadioChex;
     }
     }
 

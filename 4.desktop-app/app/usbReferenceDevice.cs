@@ -359,6 +359,14 @@ namespace USB_Generic_HID_reference_application
             return s;
         }
 
+        public bool StopTest()
+        {
+            var outputBuffer = new byte[65];
+            outputBuffer[0] = 0;
+            outputBuffer[1] = 0xF0;
+            return writeRawReportToDevice(outputBuffer);
+        }
+
         public bool Write(int address, int data)
         {
             var outputBuffer = new byte[65];
@@ -392,14 +400,27 @@ namespace USB_Generic_HID_reference_application
             return success;
         }
 
-        public bool ContRead(int address, bool enable)
+        public bool ContRead(int address)
         {
             var outputBuffer = new byte[65];
 
             outputBuffer[0] = 0;
-            outputBuffer[1] = (byte)(enable ? 0xf1 : 0xf0);
+            outputBuffer[1] = 0xE0;
             outputBuffer[2] = (byte)(address / 256);
             outputBuffer[3] = (byte)(address & 255);
+
+            return writeRawReportToDevice(outputBuffer);
+        }
+
+        public bool ContWrite(int address, int data)
+        {
+            var outputBuffer = new byte[65];
+
+            outputBuffer[0] = 0;
+            outputBuffer[1] = 0xE1;
+            outputBuffer[2] = (byte)(address / 256);
+            outputBuffer[3] = (byte)(address & 255);
+            outputBuffer[4] = (byte)data;
 
             return writeRawReportToDevice(outputBuffer);
         }
@@ -494,5 +515,6 @@ namespace USB_Generic_HID_reference_application
             if (!success) _logger("BlockRead: Bulk read from device failed");
             return success;
 		}
-	}
+
+    }
 }

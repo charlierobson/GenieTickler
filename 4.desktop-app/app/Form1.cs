@@ -26,11 +26,9 @@
 //-----------------------------------------------------------------------------
 
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 // ReSharper disable LocalizableElement
 
@@ -54,21 +52,19 @@ namespace USB_Generic_HID_reference_application
             InitializeComponent();
 
             // Create the USB reference device object (passing VID and PID)
-            _theReferenceUsbDevice = new usbReferenceDevice(0x04D8, 0x0080, o => ThreadSafeDebugUpdate(o));
+            _theReferenceUsbDevice = new usbReferenceDevice(0x04D8, 0x0080, ThreadSafeDebugUpdate);
 
             // Add a listener for usb events
             _theReferenceUsbDevice.usbEvent += usbEvent_receiver;
 
             // Perform an initial search for the target device
             _theReferenceUsbDevice.findTargetDevice();
-
-            _stopSignal = new AutoResetEvent(false);
         }
 
         // Create an instance of the USB reference device
         private readonly usbReferenceDevice _theReferenceUsbDevice;
 
-        delegate void ThreadSafeDebugUpdateDelegate(string debugText);
+        private delegate void ThreadSafeDebugUpdateDelegate(string debugText);
 
         private void ThreadSafeDebugUpdate(string debugText)
         {
@@ -79,9 +75,7 @@ namespace USB_Generic_HID_reference_application
             }
             else
             {
-                debugText.TrimEnd();
-                debugText += "\n";
-                debugTextBox.AppendText(debugText);
+                debugTextBox.AppendText(string.Format("{0}\n", debugText.TrimEnd()));
             }
         }
 
@@ -92,14 +86,13 @@ namespace USB_Generic_HID_reference_application
             usbToolStripStatusLabel.Text = _theReferenceUsbDevice.DeviceAttached ? "USB Device is attached" : "USB Device is detached";
         }
 
-		private object _debugCollectorLock = new object();
+		private readonly object _debugCollectorLock = new object();
 		
 		private string GetDebugString()
 		{
 			lock(_debugCollectorLock)
 			{
-				// Collect the debug information from the device
-				return _theReferenceUsbDevice.collectDebug();
+			    return _theReferenceUsbDevice.DeviceAttached ? _theReferenceUsbDevice.collectDebug() : string.Empty;
 			}
 		}
         // Collect debug timer has ticked
@@ -111,11 +104,9 @@ namespace USB_Generic_HID_reference_application
 				var debugText = GetDebugString();
 
 				// Display the debug information
-				if (debugText != String.Empty)
+				if (debugText != string.Empty)
 				{
-					debugText.TrimEnd();
-					debugText += "\n";
-					debugTextBox.AppendText(debugText);
+					debugTextBox.AppendText(string.Format("{0}\n", debugText.TrimEnd()));
 				}
 			}
         }
@@ -124,14 +115,43 @@ namespace USB_Generic_HID_reference_application
         private readonly CheckBox[] _dataBits = new CheckBox[8];
         private Label _addrhex;
         private Label _datahex;
-        private AutoResetEvent _stopSignal;
-        private Thread _testProcedure;
 
-        private const int LEFT = 20;
+        private CheckBox CreateCheckButton(Control container, string buttonText, Action onBecomingChecked)
+        {
+            var checkBox = new CheckBox() { Text = buttonText, Appearance = Appearance.Button, MinimumSize = new Size(64, 23), Size = new Size(64, 23), TextAlign = ContentAlignment.MiddleCenter };
+            checkBox.CheckedChanged += (sender, args) =>
+            {
+                var senderAsCheckBox = (CheckBox) sender;
+
+                if (!_theReferenceUsbDevice.DeviceAttached)
+                {
+                    senderAsCheckBox.Checked = false;
+                    return;
+                }
+
+                if (senderAsCheckBox.Checked)
+                {
+                    foreach (var box in container.Controls.Cast<object>().OfType<CheckBox>().Where(box => box != senderAsCheckBox && box.Checked))
+                    {
+                        _theReferenceUsbDevice.StopTest();
+                        box.Checked = false;
+                    }
+
+                    senderAsCheckBox.BackColor = Color.PaleGreen;
+                    onBecomingChecked();
+                }
+                else
+                {
+                    senderAsCheckBox.BackColor = DefaultBackColor;
+                }
+            };
+            container.Controls.Add(checkBox);
+            return checkBox;
+        }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            var x = LEFT;
+            var x = 20;
             var y = 40;
 
             Controls.Add(new Label { Text = "Address", Location = new Point(x, y - 20), AutoSize = true });
@@ -182,58 +202,22 @@ namespace USB_Generic_HID_reference_application
                 x += 16;
             }
 
-            x = LEFT;
-            y += 60;
+            CreateCheckButton(flowLayoutPanelRadioChex, "DToggle", DataToggleTest);
 
-            var testBtnDToggle = new CheckBox() { Text = "DToggle", Appearance = Appearance.Button, Location = new Point(x, y), MinimumSize = new Size(64, 23), Size = new Size(64, 23), TextAlign = ContentAlignment.MiddleCenter };
-            testBtnDToggle.Click += (o, args) =>
-            {
-                DataToggleTest(testBtnDToggle);
-            };
-            Controls.Add(testBtnDToggle);
+            CreateCheckButton(flowLayoutPanelRadioChex, "Cont. RD", ContinuousReadTest);
 
-            x += 80;
-            var testBtnContRead = new CheckBox() { Text = "ContRead", Appearance = Appearance.Button, Location = new Point(x, y), MinimumSize = new Size(64, 23), Size = new Size(64, 23), TextAlign = ContentAlignment.MiddleCenter };
-            testBtnContRead.Click += (o, args) =>
-            {
-                ContinuousReadTest(testBtnContRead);
-            };
-            Controls.Add(testBtnContRead);
+            CreateCheckButton(flowLayoutPanelRadioChex, "Cont. WR", ContinuousWriteTest);
 
-            x += 80;
-            var testBtnContWrite = new CheckBox() { Text = "ContWrite", Appearance = Appearance.Button, Location = new Point(x, y), MinimumSize = new Size(64, 23), Size = new Size(64, 23), TextAlign = ContentAlignment.MiddleCenter };
-            testBtnContWrite.Click += (o, args) =>
-            {
-                ContinuousWriteTest(testBtnContWrite);
-            };
-            Controls.Add(testBtnContWrite);
+            CreateCheckButton(flowLayoutPanelRadioChex, "Block Fill", MemFill);
 
-            x += 80;
-            var testMemFill = new Button() { Text = "Fill", Location = new Point(x, y), MinimumSize = new Size(64, 23), Size = new Size(64, 23), TextAlign = ContentAlignment.MiddleCenter };
-            testMemFill.Click += (o, args) =>
-            {
-                MemFill();
-            };
-            Controls.Add(testMemFill);
-
-            x += 80;
-            var testMemRead = new Button() { Text = "Read", Location = new Point(x, y), MinimumSize = new Size(64, 23), Size = new Size(64, 23), TextAlign = ContentAlignment.MiddleCenter };
-            testMemRead.Click += (o, args) =>
-            {
-                MemRead();
-            };
-            Controls.Add(testMemRead);
+            CreateCheckButton(flowLayoutPanelRadioChex, "Block RD", MemRead);
 		}
 
 		protected override void OnFormClosing(FormClosingEventArgs e)
 		{
 			base.OnFormClosing(e);
 			
-			StopCurrentTest();
-
             _theReferenceUsbDevice.usbEvent -= usbEvent_receiver;
-
-			_stopSignal.Close();
 		}
 
 		private void MemRead()
@@ -242,138 +226,47 @@ namespace USB_Generic_HID_reference_application
 
 			var data = Enumerable.Repeat((byte)0xFF, 1024).ToArray();
 
-            StopCurrentTest();
-
-            if (!_theReferenceUsbDevice.DeviceAttached)
-            {
-               return;
-            }
-
-            StartTest(() =>
-            {
-                _theReferenceUsbDevice.BlockRead(address, data);
-				ThreadSafeDebugUpdate(HexDump(data)); 
-			});
-			
-
+            _theReferenceUsbDevice.BlockRead(address, data);
         }
 	
         private void MemFill()
         {
             var address = DecodeBits(_addressBits);
 
-            StopCurrentTest();
-
-            if (!_theReferenceUsbDevice.DeviceAttached)
-            {
-               return;
-            }
-
-            StartTest(() =>
-            {
-				byte clock = 0;
-                var data = new byte[240];
+			byte clock = 0;
+            var data = new byte[240];
 				
-				for(var i = 0; i < 240; ++i)
-				{
-					data[i] = (byte)((i / 2) | clock);
-					clock ^= 0x80;
-				}
-                _theReferenceUsbDevice.BlockWrite(address, data);
-            });
+			for(var i = 0; i < 240; ++i)
+			{
+				data[i] = (byte)((i / 2) | clock);
+				clock ^= 0x80;
+			}
+
+            _theReferenceUsbDevice.BlockWrite(address, data);
         }
 
-        private void ContinuousWriteTest(CheckBox testBtnToggle)
+        private void ContinuousWriteTest()
         {
-            StopCurrentTest();
-
-            if (!_theReferenceUsbDevice.DeviceAttached)
-            {
-               testBtnToggle.Checked = false;
-               return;
-            }
-
-            if (testBtnToggle.Checked)
-            {
-                StartTest(() =>
-                {
-                    var address = DecodeBits(_addressBits);
-                    var data = DecodeBits(_dataBits);
-                    testBtnToggle.BackColor = testBtnToggle.BackColor == Color.Chartreuse ? DefaultBackColor : Color.Chartreuse;
-
-                    do
-                    {
-                        _theReferenceUsbDevice.Write(address, data);
-                    }
-                    while (!_stopSignal.WaitOne(20));
-
-                    testBtnToggle.BackColor = DefaultBackColor;
-                });
-            }
+            var address = DecodeBits(_addressBits);
+            var data = DecodeBits(_dataBits);
+            _theReferenceUsbDevice.ContWrite(address, data);
         }
 
-        private void ContinuousReadTest(CheckBox testBtnToggle)
+        private void ContinuousReadTest()
         {
-            if (!_theReferenceUsbDevice.DeviceAttached)
-            {
-               testBtnToggle.Checked = false;
-               return;
-            }
-
 			var address = DecodeBits(_addressBits);
-			_theReferenceUsbDevice.ContRead(address, testBtnToggle.Checked);
+			_theReferenceUsbDevice.ContRead(address);
         }
 
-        private void DataToggleTest(CheckBox testBtnToggle)
+        private void DataToggleTest()
         {
-            StopCurrentTest();
-
-            if (!_theReferenceUsbDevice.DeviceAttached)
-            {
-               testBtnToggle.Checked = false;
-               return;
-            }
-
-            if (testBtnToggle.Checked)
-            {
-                StartTest(() =>
-                {
-                    var address = DecodeBits(_addressBits);
-                    var data = DecodeBits(_dataBits);
-
-                    do
-                    {
-                        Debug.WriteLine(string.Format("data = {0}", data));
-
-                        _theReferenceUsbDevice.Write(address, data);
-                        data ^= 0xff;
-
-                        testBtnToggle.BackColor = testBtnToggle.BackColor == Color.Chartreuse ? DefaultBackColor : Color.Chartreuse;
-                    }
-                    while (!_stopSignal.WaitOne(500));
-
-                    testBtnToggle.BackColor = DefaultBackColor;
-                });
-            }
-        }
-
-        private void StartTest(Action action)
-        {
-            _testProcedure = new Thread(new ThreadStart(action));
-            _testProcedure.Start();
-        }
-
-        private void StopCurrentTest()
-        {
-            if (_testProcedure == null) return;
-
-            _stopSignal.Set();
-            _testProcedure.Join();
-            _testProcedure = null;
+            var data = DecodeBits(_dataBits);
         }
 
         private static int DecodeBits(CheckBox[] bitCollection)
         {
+            // assumes that the checkboxes in the collection are added in place postion order 0 -> N
+
             var value = 0;
             var bitMask = 1;
 
@@ -389,6 +282,8 @@ namespace USB_Generic_HID_reference_application
 
         private void EncodeBits(CheckBox[] bitCollection, int data)
         {
+            // assumes that the checkboxes in the collection are added in place postion order 0 -> N
+
             var bitMask = 1;
 
             foreach (var bit in bitCollection)
@@ -401,42 +296,41 @@ namespace USB_Generic_HID_reference_application
 		private static string HexDump(byte[] bytes, int bytesPerLine = 16)
         {
             if (bytes == null) return "<null>";
-            int bytesLength = bytes.Length;
 
-            char[] HexChars = "0123456789ABCDEF".ToCharArray();
+            var bytesLength = bytes.Length;
 
-            int firstHexColumn =
-                  8                   // 8 characters for the address
-                + 3;                  // 3 spaces
+            var hexChars = "0123456789ABCDEF".ToCharArray();
 
-            int firstCharColumn = firstHexColumn
+		    const int firstHexColumn = 8 + 3; // 8 characters for the address + 3 spaces
+
+            var firstCharColumn = firstHexColumn
                 + bytesPerLine * 3       // - 2 digit for the hexadecimal value and 1 space
                 + (bytesPerLine - 1) / 8 // - 1 extra space every 8 characters from the 9th
                 + 2;                  // 2 spaces 
 
-            int lineLength = firstCharColumn
+            var lineLength = firstCharColumn
                 + bytesPerLine           // - characters to show the ascii value
                 + Environment.NewLine.Length; // Carriage return and line feed (should normally be 2)
 
-            char[] line = (new String(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
-            int expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
-            StringBuilder result = new StringBuilder(expectedLines * lineLength);
+            var line = (new string(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
+            var expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
+            var result = new StringBuilder(expectedLines * lineLength);
 
-            for (int i = 0; i < bytesLength; i += bytesPerLine)
+            for (var i = 0; i < bytesLength; i += bytesPerLine)
             {
-                line[0] = HexChars[(i >> 28) & 0xF];
-                line[1] = HexChars[(i >> 24) & 0xF];
-                line[2] = HexChars[(i >> 20) & 0xF];
-                line[3] = HexChars[(i >> 16) & 0xF];
-                line[4] = HexChars[(i >> 12) & 0xF];
-                line[5] = HexChars[(i >> 8) & 0xF];
-                line[6] = HexChars[(i >> 4) & 0xF];
-                line[7] = HexChars[(i >> 0) & 0xF];
+                line[0] = hexChars[(i >> 28) & 0xF];
+                line[1] = hexChars[(i >> 24) & 0xF];
+                line[2] = hexChars[(i >> 20) & 0xF];
+                line[3] = hexChars[(i >> 16) & 0xF];
+                line[4] = hexChars[(i >> 12) & 0xF];
+                line[5] = hexChars[(i >> 8) & 0xF];
+                line[6] = hexChars[(i >> 4) & 0xF];
+                line[7] = hexChars[(i >> 0) & 0xF];
 
-                int hexColumn = firstHexColumn;
-                int charColumn = firstCharColumn;
+                var hexColumn = firstHexColumn;
+                var charColumn = firstCharColumn;
 
-                for (int j = 0; j < bytesPerLine; j++)
+                for (var j = 0; j < bytesPerLine; j++)
                 {
                     if (j > 0 && (j & 7) == 0) hexColumn++;
                     if (i + j >= bytesLength)
@@ -447,10 +341,10 @@ namespace USB_Generic_HID_reference_application
                     }
                     else
                     {
-                        byte b = bytes[i + j];
-                        line[hexColumn] = HexChars[(b >> 4) & 0xF];
-                        line[hexColumn + 1] = HexChars[b & 0xF];
-                        line[charColumn] = (b < 32 ? '.' : (char)b);
+                        var b = bytes[i + j];
+                        line[hexColumn] = hexChars[(b >> 4) & 0xF];
+                        line[hexColumn + 1] = hexChars[b & 0xF];
+                        line[charColumn] = b < 32 ? '.' : (char)b;
                     }
                     hexColumn += 3;
                     charColumn++;
