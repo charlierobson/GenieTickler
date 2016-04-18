@@ -29,18 +29,18 @@ using System;
 using System.Windows.Forms;
 
 namespace USB_Generic_HID_reference_application
+{
+    internal static class Program
     {
-    static class Program
-        {
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
-            {
+        private static void Main()
+        {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
-            }
         }
     }
+}

@@ -52,7 +52,7 @@ namespace USB_Generic_HID_reference_application
             InitializeComponent();
 
             // Create the USB reference device object (passing VID and PID)
-            _theReferenceUsbDevice = new usbReferenceDevice(0x04D8, 0x0080, ThreadSafeDebugUpdate);
+            _theReferenceUsbDevice = new UsbReferenceDevice(0x04D8, 0x0080, ThreadSafeDebugUpdate);
 
             // Add a listener for usb events
             _theReferenceUsbDevice.usbEvent += usbEvent_receiver;
@@ -62,7 +62,7 @@ namespace USB_Generic_HID_reference_application
         }
 
         // Create an instance of the USB reference device
-        private readonly usbReferenceDevice _theReferenceUsbDevice;
+        private readonly UsbReferenceDevice _theReferenceUsbDevice;
 
         private delegate void ThreadSafeDebugUpdateDelegate(string debugText);
 
@@ -92,7 +92,7 @@ namespace USB_Generic_HID_reference_application
 		{
 			lock(_debugCollectorLock)
 			{
-			    return _theReferenceUsbDevice.DeviceAttached ? _theReferenceUsbDevice.collectDebug() : string.Empty;
+			    return _theReferenceUsbDevice.DeviceAttached ? _theReferenceUsbDevice.CollectDebug() : string.Empty;
 			}
 		}
         // Collect debug timer has ticked
@@ -116,7 +116,7 @@ namespace USB_Generic_HID_reference_application
         private Label _addrhex;
         private Label _datahex;
 
-        private CheckBox CreateCheckButton(Control container, string buttonText, Action onBecomingChecked)
+        private void CreateCheckButton(Control container, string buttonText, Action onBecomingChecked)
         {
             var checkBox = new CheckBox() { Text = buttonText, Appearance = Appearance.Button, MinimumSize = new Size(64, 23), Size = new Size(64, 23), TextAlign = ContentAlignment.MiddleCenter };
             checkBox.CheckedChanged += (sender, args) =>
@@ -133,7 +133,7 @@ namespace USB_Generic_HID_reference_application
                 {
                     foreach (var box in container.Controls.Cast<object>().OfType<CheckBox>().Where(box => box != senderAsCheckBox && box.Checked))
                     {
-                        _theReferenceUsbDevice.StopTest();
+                        _theReferenceUsbDevice.SendStop();
                         box.Checked = false;
                     }
 
@@ -146,7 +146,6 @@ namespace USB_Generic_HID_reference_application
                 }
             };
             container.Controls.Add(checkBox);
-            return checkBox;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -173,15 +172,15 @@ namespace USB_Generic_HID_reference_application
             var button = new Button { Text = "Write", Location = new Point(x, y+20), AutoSize = true, Width = 50 };
             button.Click += (o, args) =>
             {
-                _theReferenceUsbDevice.Write(DecodeBits(_addressBits), DecodeBits(_dataBits));
+                _theReferenceUsbDevice.WriteSingleByte(DecodeBits(_addressBits), DecodeBits(_dataBits));
             };
             Controls.Add(button);
 
             button = new Button { Text = "Read", Location = new Point(x + 75, y+20), Width = 50 };
             button.Click += (o, args) =>
             {
-                byte data;
-                if (_theReferenceUsbDevice.Read(DecodeBits(_addressBits), out data))
+                byte data = 0;
+                if (_theReferenceUsbDevice.ReadSingleByte(DecodeBits(_addressBits), ref data))
                 {
                     EncodeBits(_dataBits, data);
                 }
@@ -202,66 +201,55 @@ namespace USB_Generic_HID_reference_application
                 x += 16;
             }
 
-            CreateCheckButton(flowLayoutPanelRadioChex, "DToggle", DataToggleTest);
+            CreateCheckButton(flowLayoutPanelRadioChex, "Cont. RD", () =>
+            {
+                var address = DecodeBits(_addressBits);
+                _theReferenceUsbDevice.ContRead(address);
+            });
 
-            CreateCheckButton(flowLayoutPanelRadioChex, "Cont. RD", ContinuousReadTest);
+            CreateCheckButton(flowLayoutPanelRadioChex, "Cont. WR", () =>
+            {
+                var address = DecodeBits(_addressBits);
+                var data = DecodeBits(_dataBits);
+                _theReferenceUsbDevice.ContWrite(address, data);
+            });
 
-            CreateCheckButton(flowLayoutPanelRadioChex, "Cont. WR", ContinuousWriteTest);
+            CreateCheckButton(flowLayoutPanelRadioChex, "Block WR", ()=>
+            {
+                var address = DecodeBits(_addressBits);
+                var data = GetSimpleParallelData(1024);
+                _theReferenceUsbDevice.BlockWrite(address, data);
+            });
 
-            CreateCheckButton(flowLayoutPanelRadioChex, "Block Fill", MemFill);
-
-            CreateCheckButton(flowLayoutPanelRadioChex, "Block RD", MemRead);
+            CreateCheckButton(flowLayoutPanelRadioChex, "Block RD", ()=>
+            {
+                var address = DecodeBits(_addressBits);
+                var fillMe = Enumerable.Repeat((byte)0xFF, count: 1024).ToArray();
+                if (_theReferenceUsbDevice.BlockRead(address, fillMe))
+                {
+                    ThreadSafeDebugUpdate(HexDump(fillMe));
+                }
+            });
 		}
 
-		protected override void OnFormClosing(FormClosingEventArgs e)
+        private static byte[] GetSimpleParallelData(int count)
+        {
+            byte clock = 0;
+            var data = new byte[count];
+            for (var i = 0; i < count; ++i)
+            {
+                data[i] = (byte)(((i & 255) / 2) | clock);
+                clock ^= 0x80;
+            }
+            return data;
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
 		{
 			base.OnFormClosing(e);
 			
             _theReferenceUsbDevice.usbEvent -= usbEvent_receiver;
 		}
-
-		private void MemRead()
-        {
-            var address = DecodeBits(_addressBits);
-
-			var data = Enumerable.Repeat((byte)0xFF, 1024).ToArray();
-
-            _theReferenceUsbDevice.BlockRead(address, data);
-        }
-	
-        private void MemFill()
-        {
-            var address = DecodeBits(_addressBits);
-
-			byte clock = 0;
-            var data = new byte[240];
-				
-			for(var i = 0; i < 240; ++i)
-			{
-				data[i] = (byte)((i / 2) | clock);
-				clock ^= 0x80;
-			}
-
-            _theReferenceUsbDevice.BlockWrite(address, data);
-        }
-
-        private void ContinuousWriteTest()
-        {
-            var address = DecodeBits(_addressBits);
-            var data = DecodeBits(_dataBits);
-            _theReferenceUsbDevice.ContWrite(address, data);
-        }
-
-        private void ContinuousReadTest()
-        {
-			var address = DecodeBits(_addressBits);
-			_theReferenceUsbDevice.ContRead(address);
-        }
-
-        private void DataToggleTest()
-        {
-            var data = DecodeBits(_dataBits);
-        }
 
         private static int DecodeBits(CheckBox[] bitCollection)
         {

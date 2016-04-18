@@ -26,7 +26,6 @@
 //-----------------------------------------------------------------------------
 
 using System;
-using System.Diagnostics;
 using System.Text;
 using usbGenericHidCommunications;
 // The following namespace allows debugging output (when compiled in debug mode)
@@ -42,362 +41,74 @@ namespace USB_Generic_HID_reference_application
     /// library to perform different types of read and write
     /// operations.
     /// </summary>
-    class usbReferenceDevice : usbGenericHidCommunication
+    internal class UsbReferenceDevice : usbGenericHidCommunication
     {
         private readonly Action<string> _logger;
+        private readonly byte[] _outputBuffer = new byte[65];
 
-        /// <summary>
-        /// Class constructor - place any initialisation here
-        /// </summary>
-        /// <param name="vid"></param>
-        /// <param name="pid"></param>
-        public usbReferenceDevice(int vid, int pid, Action<string> logger) : base(vid, pid)
+        public UsbReferenceDevice(int vid, int pid, Action<string> logger) : base(vid, pid)
         {
             _logger = logger;
         }
-/* original io code
-        public bool test1()
-        {
-            // Test 1 - Send a single write packet to the USB device
 
-            // Declare our output buffer
-            Byte[] outputBuffer = new Byte[65];
-
-            // Byte 0 must be set to 0
-            outputBuffer[0] = 0;
-
-            // Byte 1 must be set to our command
-            outputBuffer[1] = 0x80;
-
-            // Fill the rest of the buffer with known data
-            int bufferPointer;
-            Byte data = 0;
-            for (bufferPointer = 2; bufferPointer < 65; bufferPointer++)
-            {
-                // We send the numbers 0 to 63 to the device
-                outputBuffer[bufferPointer] = data;
-                data++;
-            }
-
-            // Perform the write command
-            bool success;
-            success = writeRawReportToDevice(outputBuffer);
-
-            // We can't tell if the device receieved the data ok, we are
-            // only indicating that the write was error free.
-            return success;
-        }
-        public bool test2()
-        {
-            // Test 2 - Send a single write packet to the USB device and get
-            // a single packet back
-            Debug.WriteLine("Reference Application -> Starting Test 2");
-
-            // Declare our output buffer
-            Byte[] outputBuffer = new Byte[65];
-
-            // Declare our input buffer
-            Byte[] inputBuffer = new Byte[65];
-
-            // Byte 0 must be set to 0
-            outputBuffer[0] = 0;
-
-            // Byte 1 must be set to our command
-            outputBuffer[1] = 0x81;
-
-            // Fill the rest of the buffer with known data
-            int bufferPointer;
-            Byte data = 0;
-            for (bufferPointer = 2; bufferPointer < 65; bufferPointer++)
-            {
-                // We send the numbers 0 to 63 to the device
-                outputBuffer[bufferPointer] = data;
-                data++;
-            }
-
-            // Perform the write command
-            bool success;
-            success = writeRawReportToDevice(outputBuffer);
-
-            // Only proceed if the write was successful
-            if (success)
-            {
-                // Perform the read
-                success = readSingleReportFromDevice(ref inputBuffer);
-
-                // Was the read successful?
-                if (!success) return false;
-
-                // Test the received data; we expect 65 bytes, byte[0] is unused
-                // bytes 1-64 should be filled with the numbers 0-63
-                data = 0;
-                for (bufferPointer = 1; bufferPointer < 65; bufferPointer++)
-                {
-                    if (inputBuffer[bufferPointer] != data)
-                    {
-                        Debug.WriteLine("Reference Application -> TEST2: Incorrect data received from device!");
-                        return false;
-                    }
-                    data++;
-                }
-                success = true;
-            }
-            else Debug.WriteLine("Reference Application -> TEST2: Write report to device failed!");
-
-            // The data was sent and received ok!
-            return success;
-        }
-        public bool test3()
-        {
-            // Test 3 - Single packet write, 100 packets read
-            Debug.WriteLine("Reference Application -> Starting Test 3");
-
-            // Declare our output buffer
-            Byte[] outputBuffer = new Byte[65];
-
-            // Declare our input buffer (this has to be 128 bytes)
-            Byte[] inputBuffer = new Byte[128*65];
-
-            // Byte 0 must be set to 0
-            outputBuffer[0] = 0;
-
-            // Byte 1 must be set to our command
-            outputBuffer[1] = 0x82;
-
-            // Fill the rest of the buffer with known data
-            int bufferPointer;
-            Byte data = 0;
-            for (bufferPointer = 2; bufferPointer < 65; bufferPointer++)
-            {
-                // We send the numbers 0 to 63 to the device
-                outputBuffer[bufferPointer] = data;
-                data++;
-            }
-
-            // Perform the write command
-            bool success;
-            success = writeRawReportToDevice(outputBuffer);
-
-            // Only proceed if the write was successful
-            if (success)
-            {
-                Debug.WriteLine("Reference Application -> TEST3: Write command successful, packet sent");
-
-                // Perform the read
-                success = readMultipleReportsFromDevice(ref inputBuffer, 128);
-
-                // Was the read successful?
-                if (!success)
-                {
-                    Debug.WriteLine("Reference Application -> TEST3: Read unsuccessful!}");
-                    return false;
-                }
-
-                // Test the received data
-                for (int packetCounter = 0; packetCounter < 128; packetCounter++)
-                {
-                    // Test the received data; we expect 65 bytes, byte[0] is unused
-                    // bytes 1-64 should be filled with the number of the packet
-                    for (bufferPointer = 1; bufferPointer < 65; bufferPointer++)
-                    {
-                        if (inputBuffer[bufferPointer + (packetCounter*65)] != packetCounter)
-                        {
-                            Debug.WriteLine(string.Format(
-                                "Reference Application -> TEST3: Invalid data - packet number {0}, byte number {1}",
-                                packetCounter, bufferPointer));
-                            Debug.WriteLine(string.Format(
-                                "Reference Application -> TEST3: I expected {0}, but got {1}...",
-                                packetCounter, inputBuffer[bufferPointer + (packetCounter*65)]));
-                            return false;
-                        }
-                    }
-                    success = true;
-                }
-            }
-
-            // The data was sent and received ok!
-            return success;
-        }
-        public bool test4()
-        {
-            // Test 4 - 100 packets write, single packet read
-            Debug.WriteLine("Reference Application -> Starting Test 4");
-
-            // Declare our output buffer
-            Byte[] outputBuffer = new Byte[65];
-
-            // Declare our input buffer
-            Byte[] inputBuffer = new Byte[65];
-
-            // Before performing a bulk send to the device we have to send a command
-            // packet to let the device know what's about to happen...
-
-            // Byte 0 must be set to 0
-            outputBuffer[0] = 0;
-
-            // Byte 1 must be set to our command
-            outputBuffer[1] = 0x83;
-
-            // Fill the rest of the buffer with known data
-            int bufferPointer;
-            Byte data = 0;
-            for (bufferPointer = 2; bufferPointer < 65; bufferPointer++)
-            {
-                // We send the numbers 0 to 63 to the device
-                outputBuffer[bufferPointer] = data;
-                data++;
-            }
-
-            // Perform the write command
-            bool success;
-            success = writeRawReportToDevice(outputBuffer);
-
-            // If the write was successful we begin the bulk send
-            if (success)
-            {
-                // Now we send 128 packets to the device
-                for (int packetCounter = 0; packetCounter < 128; packetCounter++)
-                {
-                    // Fill the buffer with meaningful data
-                    outputBuffer[0] = 0;
-                    for (bufferPointer = 1; bufferPointer < 65; bufferPointer++)
-                        outputBuffer[bufferPointer] = (Byte) packetCounter;
-
-                    // Send the packet to the device
-                    success = writeRawReportToDevice(outputBuffer);
-
-                    if (!success)
-                    {
-                        Debug.WriteLine("Reference Application -> TEST4: Bulk send to device failed!");
-                        return false;
-                    }
-                }
-            }
-            else Debug.WriteLine("Reference Application -> TEST4: Write report to device failed!");
-
-            // We can't tell from here if the device received the data ok, you have to check the device status LEDs
-            return true;
-        }
-        public bool test5()
-        {
-            // Test 5 - Single packet write, timeout on read
-            Debug.WriteLine("Reference Application -> Starting Test 5");
-
-            // Declare our output buffer
-            Byte[] outputBuffer = new Byte[65];
-
-            // Declare our input buffer
-            Byte[] inputBuffer = new Byte[65];
-
-            // Byte 0 must be set to 0
-            outputBuffer[0] = 0;
-
-            // Byte 1 must be set to our command
-            outputBuffer[1] = 0x84;
-
-            // Fill the rest of the buffer with known data
-            int bufferPointer;
-            Byte data = 0;
-            for (bufferPointer = 2; bufferPointer < 65; bufferPointer++)
-            {
-                // We send the numbers 0 to 63 to the device
-                outputBuffer[bufferPointer] = data;
-                data++;
-            }
-
-            // Perform the write command
-            bool success;
-            success = writeRawReportToDevice(outputBuffer);
-
-            // Only proceed if the write was successful
-            if (success)
-            {
-                // Perform the read
-                success = readSingleReportFromDevice(ref inputBuffer);
-
-                // Here we expect the read to fail due to a timeout, so failure counts as a success...
-                if (!success) return true;
-                Debug.WriteLine(
-                    "Reference Application -> TEST5: Write report to device succeeded, but we were expecting a timeout...");
-                return false;
-            }
-
-            // The data was sent and received ok!
-            return false;
-        }
-*/
         // Collect debug information from the device
-        public String collectDebug()
+        public string CollectDebug()
         {
             // Collect debug information from USB device
             //Debug.WriteLine("Reference Application -> Collecting debug information from device");
 
-            // Declare our output buffer
-            Byte[] outputBuffer = new Byte[65];
-
             // Declare our input buffer
-            Byte[] inputBuffer = new Byte[65];
+            var inputBuffer = new byte[65];
 
             // Byte 0 must be set to 0
-            outputBuffer[0] = 0;
+            _outputBuffer[0] = 0;
 
             // Byte 1 must be set to our command
-            outputBuffer[1] = 0x10;
+            _outputBuffer[1] = 0x10;
 
             // Send the collect debug command
-            writeRawReportToDevice(outputBuffer);
+            writeRawReportToDevice(_outputBuffer);
 
             // Read the response from the device
             readSingleReportFromDevice(ref inputBuffer);
 
             // Byte 1 contains the number of characters transfered
-            if (inputBuffer[1] == 0) return String.Empty;
-
-            // Convert the Byte array into a string of the correct length
-            string s = ASCIIEncoding.ASCII.GetString(inputBuffer, 2, inputBuffer[1]);
-
-            return s;
+            return inputBuffer[1] == 0 ? string.Empty : Encoding.ASCII.GetString(inputBuffer, 2, inputBuffer[1]);
         }
 
-        public bool StopTest()
+        public bool SendStop()
         {
-            var outputBuffer = new byte[65];
-            outputBuffer[0] = 0;
-            outputBuffer[1] = 0xF0;
-            return writeRawReportToDevice(outputBuffer);
+            _outputBuffer[0] = 0;
+            _outputBuffer[1] = 0xF0;
+            return writeRawReportToDevice(_outputBuffer);
         }
 
-        public bool Write(int address, int data)
+        public bool WriteSingleByte(int address, int data)
         {
-            var outputBuffer = new byte[65];
+            _outputBuffer[0] = 0;
+            _outputBuffer[1] = 0x80; // - write to genie
+            _outputBuffer[2] = (byte)(address / 256);
+            _outputBuffer[3] = (byte)(address & 255);
+            _outputBuffer[4] = (byte)data;
 
-            outputBuffer[0] = 0;
-            outputBuffer[1] = 0x80; // - write to genie
-            outputBuffer[2] = (byte)(address / 256);
-            outputBuffer[3] = (byte)(address & 255);
-            outputBuffer[4] = (byte)data;
-
-            return writeRawReportToDevice(outputBuffer);
+            return writeRawReportToDevice(_outputBuffer);
         }
 
-        public bool Read(int address, out byte data)
+        public bool ReadSingleByte(int address, ref byte data)
         {
-            var outputBuffer = new byte[65];
+            _outputBuffer[0] = 0;
+            _outputBuffer[1] = 0x81; // - read from genie
+            _outputBuffer[2] = (byte)(address / 256);
+            _outputBuffer[3] = (byte)(address & 255);
+
+            if (!writeRawReportToDevice(_outputBuffer)) return false;
+
             var inputBuffer = new byte[65];
 
-            outputBuffer[0] = 0;
-            outputBuffer[1] = 0x81; // - read from genie
-            outputBuffer[2] = (byte)(address / 256);
-            outputBuffer[3] = (byte)(address & 255);
-
-            var success = writeRawReportToDevice(outputBuffer);
-            if (success)
-            {
-                success = readSingleReportFromDevice(ref inputBuffer);
-            }
+            if (!readSingleReportFromDevice(ref inputBuffer)) return false;
 
             data = inputBuffer[1];
-            return success;
+            return true;
         }
 
         public bool ContRead(int address)
@@ -438,7 +149,7 @@ namespace USB_Generic_HID_reference_application
 
             _logger(string.Format("BlockWrite: Data length {0} (${1:X4})", data.Length, data.Length));
 
-            bool success = writeRawReportToDevice(outputBuffer);
+            var success = writeRawReportToDevice(outputBuffer);
             if (success)
             {
                 var offset = 0;
@@ -471,7 +182,7 @@ namespace USB_Generic_HID_reference_application
 			return success;
         }
 
-        public bool BlockRead(int address, byte[] data)
+        public bool BlockRead(int address, byte[] destinationByteArray)
 		{
             var buffer = new byte[65];
 
@@ -479,15 +190,15 @@ namespace USB_Generic_HID_reference_application
             buffer[1] = 0x83; // - block read from genie
             buffer[2] = (byte)(address / 256);
             buffer[3] = (byte)(address & 255);
-            buffer[4] = (byte)(data.Length / 256);
-            buffer[5] = (byte)(data.Length & 255);
+            buffer[4] = (byte)(destinationByteArray.Length / 256);
+            buffer[5] = (byte)(destinationByteArray.Length & 255);
 
-            _logger(string.Format("BlockRead: Data length {0} (${1:X4})", data.Length, data.Length));
+            _logger(string.Format("BlockRead: Data length {0} (${1:X4})", destinationByteArray.Length, destinationByteArray.Length));
 
-            bool success = writeRawReportToDevice(buffer);
+            var success = writeRawReportToDevice(buffer);
             if (success)
             {
-                var totalPackets = (data.Length + 63) / 64;
+                var totalPackets = (destinationByteArray.Length + 63) / 64;
 
 				var packets = new byte[totalPackets][];
 
@@ -499,7 +210,7 @@ namespace USB_Generic_HID_reference_application
                     success = readSingleReportFromDevice(ref p);
                 }
 
-				var remaining = data.Length;
+				var remaining = destinationByteArray.Length;
 				var offset = 0;
 				
                 for (var packet = 0; packet < totalPackets && success; ++packet)
@@ -507,7 +218,7 @@ namespace USB_Generic_HID_reference_application
 					var length = (remaining > 63) ? 64 : remaining;
 					remaining -= length;
 					
-					Array.Copy(packets[packet], 0, data, offset, length);
+					Array.Copy(packets[packet], 0, destinationByteArray, offset, length);
 					offset += 64;
 				}
 			}
