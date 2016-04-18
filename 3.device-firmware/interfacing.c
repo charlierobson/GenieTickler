@@ -1,3 +1,4 @@
+#include "HardwareProfile.h"
 #include <delays.h>
 
 #define SHIFTCLK LATBbits.LATB2
@@ -21,7 +22,7 @@ void InitInterfacing()
 	TRISB = 0x03;
 }
 
-void ShiftOut(int address)
+void ShiftOut(unsigned int address)
 {
 	int i;
 
@@ -34,7 +35,7 @@ void ShiftOut(int address)
 	}
 }
 
-void Write(int address, unsigned char data)
+void Write(unsigned int address, unsigned char data)
 {
 	ShiftOut(address);
 
@@ -51,7 +52,7 @@ void Write(int address, unsigned char data)
 }
 
 
-unsigned char Read(int address)
+unsigned char Read(unsigned int address)
 {
 	unsigned char data;
 
@@ -67,4 +68,17 @@ unsigned char Read(int address)
 	NMREQ = 1;
 
 	return data;
+}
+
+
+unsigned int businessToggleRD(unsigned int counter)
+{
+	NMREQ = 0;
+	NRD = counter & 1;
+}
+
+unsigned int businessToggleWR(unsigned int counter)
+{
+	NMREQ = 0;
+	NWR = counter & 1;
 }

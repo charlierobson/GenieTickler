@@ -92,4 +92,9 @@
 #define mStatusLED0_Toggle()     mStatusLED0 = !mStatusLED0;
 #define mStatusLED1_Toggle()     mStatusLED1 = !mStatusLED1;
 
+
+#define NOT_BUSY 65535
+#define QUITE_BUSY 32768
+#define VERY_BUSY 16384
+
 #endif

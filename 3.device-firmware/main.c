@@ -198,9 +198,20 @@ int gLength;
 // function pointer to bulk reception processor
 void (*bulkFunction)(void) = NULL;
 
-extern void Write(int address, unsigned char data);
-extern unsigned char Read(int address);
+extern void ShiftOut(unsigned int address);
+extern void Write(unsigned int address, unsigned char data);
+extern unsigned char Read(unsigned int address);
 extern void InitInterfacing(void);
+
+unsigned int blinkCounter;
+unsigned int busyLevel = NOT_BUSY;
+
+unsigned int Unbusy(unsigned int counter)
+{
+	return NOT_BUSY;
+}
+
+unsigned int (*busyFn)(unsigned int) = Unbusy;
 
 
 // Main program entry point
@@ -232,6 +243,9 @@ void main(void)
 	// Main processing loop
     while(1)
     {
+		++blinkCounter;
+		mStatusLED0 = (blinkCounter & busyFn(blinkCounter)) != 0;
+
         #if defined(USB_POLLING)
 			// If we are in polling mode the USB device tasks must be processed here
 			// (otherwise the interrupt is performing this task)
@@ -295,6 +309,9 @@ void applicationInit(void)
 				 USART_BRGH_HIGH), 25);
 }
 
+
+extern unsigned int businessToggleRD(unsigned int);
+extern unsigned int businessToggleWR(unsigned int);
 
 
 // bulk handlers
@@ -470,6 +487,16 @@ void processUsbCommands(void)
 		            bulkSendFlag = FLAG_TRUE;
 				}
             	break;
+
+				case 0xF0:
+					InitInterfacing();
+					busyFn = NULL;
+					break;
+				case 0xF1:
+					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
+					ShiftOut(gAddress);
+					busyFn = businessToggleRD;
+					break;
 
 	            default:	// Unknown command received
 		            sprintf(debugString, "Unknown command block type: %02X", ReceivedDataBuffer[0]);
