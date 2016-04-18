@@ -314,31 +314,14 @@ namespace USB_Generic_HID_reference_application
 
         private void ContinuousReadTest(CheckBox testBtnToggle)
         {
-            StopCurrentTest();
-
             if (!_theReferenceUsbDevice.DeviceAttached)
             {
                testBtnToggle.Checked = false;
                return;
             }
 
-            if (testBtnToggle.Checked)
-            {
-                StartTest(() =>
-                {
-                    var address = DecodeBits(_addressBits);
-                    testBtnToggle.BackColor = testBtnToggle.BackColor == Color.Chartreuse ? DefaultBackColor : Color.Chartreuse;
-
-                    do
-                    {
-                        byte data;
-                        _theReferenceUsbDevice.Read(address, out data);
-                    }
-                    while (!_stopSignal.WaitOne(20));
-
-                    testBtnToggle.BackColor = DefaultBackColor;
-                });
-            }
+			var address = DecodeBits(_addressBits);
+			_theReferenceUsbDevice.ContRead(address, testBtnToggle.Checked);
         }
 
         private void DataToggleTest(CheckBox testBtnToggle)

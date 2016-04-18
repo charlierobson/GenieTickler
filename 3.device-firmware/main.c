@@ -490,7 +490,7 @@ void processUsbCommands(void)
 
 				case 0xF0:
 					InitInterfacing();
-					busyFn = NULL;
+					busyFn = Unbusy;
 					break;
 				case 0xF1:
 					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];

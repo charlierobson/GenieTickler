@@ -392,6 +392,18 @@ namespace USB_Generic_HID_reference_application
             return success;
         }
 
+        public bool ContRead(int address, bool enable)
+        {
+            var outputBuffer = new byte[65];
+
+            outputBuffer[0] = 0;
+            outputBuffer[1] = (byte)(enable ? 0xf1 : 0xf0);
+            outputBuffer[2] = (byte)(address / 256);
+            outputBuffer[3] = (byte)(address & 255);
+
+            return writeRawReportToDevice(outputBuffer);
+        }
+
         public bool BlockWrite(int address, byte[] data)
         {
             var outputBuffer = new byte[65];

@@ -75,10 +75,12 @@ unsigned int businessToggleRD(unsigned int counter)
 {
 	NMREQ = 0;
 	NRD = counter & 1;
+	return VERY_BUSY;
 }
 
 unsigned int businessToggleWR(unsigned int counter)
 {
 	NMREQ = 0;
 	NWR = counter & 1;
+	return VERY_BUSY;
 }
