@@ -26,9 +26,10 @@
 //-----------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 // ReSharper disable LocalizableElement
 
@@ -63,6 +64,8 @@ namespace USB_Generic_HID_reference_application
 
         // Create an instance of the USB reference device
         private readonly UsbReferenceDevice _theReferenceUsbDevice;
+
+        private byte[] _data;
 
         private delegate void ThreadSafeDebugUpdateDelegate(string debugText);
 
@@ -225,10 +228,7 @@ namespace USB_Generic_HID_reference_application
             {
                 var address = DecodeBits(_addressBits);
                 var fillMe = Enumerable.Repeat((byte)0xFF, count: 1024).ToArray();
-                if (_theReferenceUsbDevice.BlockRead(address, fillMe))
-                {
-                    ThreadSafeDebugUpdate(HexDump(fillMe));
-                }
+                _theReferenceUsbDevice.BlockRead(address, fillMe);
             });
 		}
 
@@ -281,9 +281,9 @@ namespace USB_Generic_HID_reference_application
             }
         }
 		
-		private static string HexDump(byte[] bytes, int bytesPerLine = 16)
+		private static List<string> HexDump(byte[] bytes, int bytesPerLine = 16)
         {
-            if (bytes == null) return "<null>";
+            if (bytes == null) return null;
 
             var bytesLength = bytes.Length;
 
@@ -302,7 +302,8 @@ namespace USB_Generic_HID_reference_application
 
             var line = (new string(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
             var expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
-            var result = new StringBuilder(expectedLines * lineLength);
+
+            var result = new List<string>();
 
             for (var i = 0; i < bytesLength; i += bytesPerLine)
             {
@@ -337,9 +338,25 @@ namespace USB_Generic_HID_reference_application
                     hexColumn += 3;
                     charColumn++;
                 }
-                result.Append(line);
+
+                result.Add(line.ToString());
             }
-            return result.ToString();
+
+            return result;
 		}
+
+        private void listBoxData_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+        }
+
+        private void listBoxData_DragDrop(object sender, DragEventArgs e)
+        {
+            var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            _data = File.ReadAllBytes(files[0]);
+            var hexDump = HexDump(_data);
+            listBoxData.Items.Clear();
+            foreach(var line in hexDump) listBoxData.Items.Add(line);
+        }
     }
 }
