@@ -1,3 +1,8 @@
+## eagle
+
+*.s#?
+*.b#?
+
 ## Windows
 
 *.exe
