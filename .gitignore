@@ -1,7 +1,7 @@
 ## eagle
 
-*.s#?
 *.b#?
+*.s#?
 
 ## Windows
 

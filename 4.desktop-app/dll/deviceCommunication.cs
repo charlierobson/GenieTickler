@@ -32,9 +32,9 @@ using System.Threading;
 // The following namespace allows debugging output (when compiled in debug mode)
 
 namespace usbGenericHidCommunications
-    {
+{
     public partial class usbGenericHidCommunication
-        {
+    {
         #region outputToDeviceRegion
 
         /// <summary>
@@ -44,19 +44,19 @@ namespace usbGenericHidCommunications
         /// command number for the USB device firmware.
         /// </summary>
         protected bool writeRawReportToDevice(Byte[] outputReportBuffer)
-            {
+        {
             bool success = false;
             int numberOfBytesWritten = 0;
 
             // Make sure a device is attached
             if (!DeviceAttached)
-                {
+            {
                 //Debug.WriteLine("usbGenericHidCommunication:writeReportToDevice(): -> No device attached!");
                 return success;
-                }
+            }
 
             try
-                {
+            {
                 // Set an output report via interrupt to the device
                 success = WriteFile(
                     deviceInformation.writeHandle,
@@ -69,14 +69,14 @@ namespace usbGenericHidCommunications
                 else Debug.WriteLine("usbGenericHidCommunication:writeReportToDevice(): -> Write report failed!");
 
                 return success;
-                }
+            }
             catch (Exception)
-                {
+            {
                 // An error - send out some debug and return failure
                 Debug.WriteLine("usbGenericHidCommunication:writeReportToDevice(): -> EXCEPTION: When attempting to send an output report");
                 return false;
-                }    
             }
+        }
         #endregion
 
         #region inputFromDeviceRegion
@@ -89,7 +89,7 @@ namespace usbGenericHidCommunications
         /// The maximum report size will be determind by the length of the inputReportBuffer.
         /// </summary>
         private bool readRawReportFromDevice(ref Byte[] inputReportBuffer, ref int numberOfBytesRead)
-            {
+        {
             IntPtr eventObject = IntPtr.Zero;
             NativeOverlapped hidOverlapped = new NativeOverlapped();
             IntPtr nonManagedBuffer = IntPtr.Zero;
@@ -99,19 +99,19 @@ namespace usbGenericHidCommunications
 
             // Make sure a device is attached
             if (!DeviceAttached)
-                {
+            {
                 //Debug.WriteLine("usbGenericHidCommunication:readReportFromDevice(): -> No device attached!");
                 return false;
-                }
+            }
 
             try
-                {
+            {
                 // Prepare an event object for the overlapped ReadFile
                 eventObject = CreateEvent(IntPtr.Zero, false, false, "");
 
                 hidOverlapped.OffsetLow = 0;
                 hidOverlapped.OffsetHigh = 0;
-                hidOverlapped.EventHandle = eventObject;     
+                hidOverlapped.EventHandle = eventObject;
 
                 // Allocate memory for the unmanaged input buffer and overlap structure.
                 nonManagedBuffer = Marshal.AllocHGlobal(inputReportBuffer.Length);
@@ -128,7 +128,7 @@ namespace usbGenericHidCommunications
                     nonManagedOverlapped);
 
                 if (!success)
-                    {
+                {
                     // We are now waiting for the FileRead to complete
                     Debug.WriteLine("usbGenericHidCommunication:readReportFromDevice(): -> ReadFile started, waiting for completion...");
 
@@ -136,7 +136,7 @@ namespace usbGenericHidCommunications
                     result = WaitForSingleObject(eventObject, 3000);
 
                     switch (result)
-                        {
+                    {
                         // Has the ReadFile completed successfully?
                         case WAIT_OBJECT_0:
                             success = true;
@@ -174,21 +174,21 @@ namespace usbGenericHidCommunications
 
                             Debug.WriteLine("usbGenericHidCommunication:readReportFromDevice(): -> ReadFile unspecified error! USB device detached");
                             break;
-                        }
                     }
-                    if (success)
-                        {
-                        // Report receieved correctly, copy the unmanaged input buffer over to the managed buffer
-                        Marshal.Copy(nonManagedBuffer, inputReportBuffer, 0, numberOfBytesRead);
-                        Debug.WriteLine(string.Format("usbGenericHidCommunication:readReportFromDevice(): -> ReadFile successful {0} bytes read", numberOfBytesRead));
-                        }
                 }
-            catch (Exception)
+                if (success)
                 {
+                    // Report receieved correctly, copy the unmanaged input buffer over to the managed buffer
+                    Marshal.Copy(nonManagedBuffer, inputReportBuffer, 0, numberOfBytesRead);
+                    Debug.WriteLine(string.Format("usbGenericHidCommunication:readReportFromDevice(): -> ReadFile successful {0} bytes read", numberOfBytesRead));
+                }
+            }
+            catch (Exception)
+            {
                 // An error - send out some debug and return failure
                 Debug.WriteLine("usbGenericHidCommunication:readReportFromDevice(): -> EXCEPTION: When attempting to receive an input report");
                 return false;
-                }
+            }
 
             // Release non-managed objects before returning
             Marshal.FreeHGlobal(nonManagedBuffer);
@@ -198,7 +198,7 @@ namespace usbGenericHidCommunications
             CloseHandle(eventObject);
 
             return success;
-            }
+        }
 
         /// <summary>
         /// readSingleReportFromDevice - Reads a single report packet from the USB device.
@@ -209,24 +209,24 @@ namespace usbGenericHidCommunications
         /// <param name="inputReportBuffer"></param>
         /// <returns></returns>
         protected bool readSingleReportFromDevice(ref Byte[] inputReportBuffer)
-            {
-            bool success;
-            int numberOfBytesRead = 0;
+        {
+            var numberOfBytesRead = 0;
 
             // The size of our inputReportBuffer must be at least the same size as the input report.
             if (inputReportBuffer.Length != deviceInformation.capabilities.inputReportByteLength)
-                {
+            {
                 // inputReportBuffer is not the right length!
                 Debug.WriteLine(
-                    "usbGenericHidCommunication:readSingleReportFromDevice(): -> ERROR: The referenced inputReportBuffer size is incorrect for the input report size!");
+                    string.Format(
+                        "usbGenericHidCommunication:readSingleReportFromDevice(): -> ERROR: The referenced inputReportBuffer size ({0}) is incorrect for the input report size ({1})",
+                        inputReportBuffer.Length, deviceInformation.capabilities.inputReportByteLength)
+                        );
                 return false;
-                }
+            }
 
             // The readRawReportFromDevice method will fill the passed readBuffer or return false
-            success = readRawReportFromDevice(ref inputReportBuffer, ref numberOfBytesRead);
-
-            return success;
-            }
+            return readRawReportFromDevice(ref inputReportBuffer, ref numberOfBytesRead);
+        }
 
         /// <summary>
         /// readMultipleReportsFromDevice - Attempts to retrieve multiple reports from the device in 
@@ -239,7 +239,7 @@ namespace usbGenericHidCommunications
         /// <param name="numberOfReports"></param>
         /// <returns></returns>
         protected bool readMultipleReportsFromDevice(ref Byte[] inputReportBuffer, int numberOfReports)
-            {
+        {
             bool success = false;
             int numberOfBytesRead = 0;
             long pointerToBuffer = 0;
@@ -249,49 +249,49 @@ namespace usbGenericHidCommunications
 
             // Range check the number of reports
             if (numberOfReports == 0)
-                {
+            {
                 Debug.WriteLine(
                     "usbGenericHidCommunication:readMultipleReportsFromDevice(): -> ERROR: You cannot request 0 reports!");
                 return false;
-                }
+            }
 
             if (numberOfReports > 128)
-                {
+            {
                 Debug.WriteLine(
                     "usbGenericHidCommunication:readMultipleReportsFromDevice(): -> ERROR: Reference application testing does not verify the code for more than 128 reports");
                 return false;
-                }
+            }
 
             // The size of our inputReportBuffer must be at least the same size as the input report multiplied by the number of reports requested.
             if (inputReportBuffer.Length != (deviceInformation.capabilities.inputReportByteLength * numberOfReports))
-                {
+            {
                 // inputReportBuffer is not the right length!
                 Debug.WriteLine(
                     "usbGenericHidCommunication:readMultipleReportsFromDevice(): -> ERROR: The referenced inputReportBuffer size is incorrect for the number of input reports requested!");
                 return false;
-                }
+            }
 
             // The readRawReportFromDevice method will fill the passed read buffer or return false
             while (pointerToBuffer != (deviceInformation.capabilities.inputReportByteLength * numberOfReports))
-                {
+            {
                 Debug.WriteLine(
                     "usbGenericHidCommunication:readMultipleReportsFromDevice(): -> Reading from device...");
                 success = readRawReportFromDevice(ref temporaryBuffer, ref numberOfBytesRead);
 
                 // Was the read successful?
                 if (!success)
-                    {
+                {
                     return false;
-                    }
+                }
 
                 // Copy the received data into the referenced input buffer
                 Array.Copy(temporaryBuffer, 0, inputReportBuffer, pointerToBuffer, numberOfBytesRead);
                 pointerToBuffer += numberOfBytesRead;
-                }
-
-            return success;
             }
 
-        #endregion
+            return success;
         }
+
+        #endregion
     }
+}
