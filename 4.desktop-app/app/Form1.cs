@@ -133,7 +133,6 @@ namespace USB_Generic_HID_reference_application
                 {
                     foreach (var box in container.Controls.Cast<object>().OfType<CheckBox>().Where(box => box != senderAsCheckBox && box.Checked))
                     {
-                        _theReferenceUsbDevice.SendStop();
                         box.Checked = false;
                     }
 
@@ -143,7 +142,8 @@ namespace USB_Generic_HID_reference_application
                 else
                 {
                     senderAsCheckBox.BackColor = DefaultBackColor;
-                }
+                        _theReferenceUsbDevice.SendStop();
+				}
             };
             container.Controls.Add(checkBox);
         }

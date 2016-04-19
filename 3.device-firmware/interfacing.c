@@ -99,7 +99,7 @@ unsigned int businessExerciseAddr()
 {
 	++address;
 	ShiftOut(address);
-	MREQ = 0;
-	MREQ = 1;
+	NMREQ = 0;
+	NMREQ = 1;
 	return VERY_BUSY;
 }

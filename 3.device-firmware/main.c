@@ -212,6 +212,7 @@ unsigned int Unbusy()
 
 unsigned int (*busyFn)(void) = Unbusy;
 
+volatile unsigned int trigRate = 127;
 
 // Main program entry point
 void main(void)
@@ -243,7 +244,7 @@ void main(void)
     while(1)
     {
 		++blinkCounter;
-		mScopeTrigger = (blinkCounter & 1024) != 0;
+		mScopeTrigger = (blinkCounter & trigRate) == 0;
 		mStatusLED0 = (blinkCounter & busyFn()) != 0;
 
         #if defined(USB_POLLING)
@@ -515,6 +516,10 @@ void processUsbCommands(void)
 				case 0xF0:
 					InitInterfacing();
 					busyFn = Unbusy;
+					break;
+
+				case 0xFC:
+					trigRate = ReceivedDataBuffer[1];
 					break;
 
 	            default:	// Unknown command received
