@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 // ReSharper disable LocalizableElement
 
@@ -65,7 +66,7 @@ namespace USB_Generic_HID_reference_application
         // Create an instance of the USB reference device
         private readonly UsbReferenceDevice _theReferenceUsbDevice;
 
-        private byte[] _data;
+        private byte[] _data = new byte[0];
 
         private delegate void ThreadSafeDebugUpdateDelegate(string debugText);
 
@@ -219,16 +220,26 @@ namespace USB_Generic_HID_reference_application
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Block WR", ()=>
             {
-                var address = DecodeBits(_addressBits);
-                var data = GetSimpleParallelData(1024);
-                _theReferenceUsbDevice.BlockWrite(address, data);
+                if (_data.Count() != 0)
+                {
+                    var address = DecodeBits(_addressBits);
+                    _theReferenceUsbDevice.BlockWrite(address, _data);
+                }
+                else
+                {
+                    ThreadSafeDebugUpdate("No data to write.");
+                }
             });
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Block RD", ()=>
             {
                 var address = DecodeBits(_addressBits);
-                var fillMe = Enumerable.Repeat((byte)0xFF, count: 1024).ToArray();
+
+                var fillMe = new byte[1024];
+
                 _theReferenceUsbDevice.BlockRead(address, fillMe);
+
+                LoadData(fillMe);
             });
 		}
 
@@ -339,7 +350,7 @@ namespace USB_Generic_HID_reference_application
                     charColumn++;
                 }
 
-                result.Add(line.ToString());
+                result.Add(new string(line));
             }
 
             return result;
@@ -350,13 +361,19 @@ namespace USB_Generic_HID_reference_application
             e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
         }
 
+        private void LoadData(byte[] data)
+        {
+            _data = data;
+
+            var hexDump = HexDump(_data);
+            listBoxData.Items.Clear();
+            foreach (var line in hexDump) listBoxData.Items.Add(line);
+        }
+
         private void listBoxData_DragDrop(object sender, DragEventArgs e)
         {
             var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            _data = File.ReadAllBytes(files[0]);
-            var hexDump = HexDump(_data);
-            listBoxData.Items.Clear();
-            foreach(var line in hexDump) listBoxData.Items.Add(line);
+            LoadData(File.ReadAllBytes(files[0]));
         }
     }
 }
