@@ -30,7 +30,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 // ReSharper disable LocalizableElement
 
@@ -71,7 +70,10 @@ namespace USB_Generic_HID_reference_application
         private delegate void ThreadSafeDebugUpdateDelegate(string debugText);
 
         private BitEditPanel _addressEdit;
+
         private BitEditPanel _dataEdit;
+
+        private ComboBox _lengthEdit;
 
         private void ThreadSafeDebugUpdate(string debugText)
         {
@@ -163,10 +165,46 @@ namespace USB_Generic_HID_reference_application
             _dataEdit = new BitEditPanel("Data", 8)
             {
                 BorderStyle = BorderStyle.FixedSingle,
-                Location = new Point(280, 4),
+                Location = new Point(_addressEdit.Right + 16, 4),
                 Size = new Size(140, 60)
             };
             panelMemParams.Controls.Add(_dataEdit);
+
+            var lengthLabel = new Label
+            {
+                Text = "Length",
+                TextAlign = ContentAlignment.MiddleRight,
+                AutoSize = true,
+                Location = new Point(4, _addressEdit.Bottom + 8)
+            };
+            panelMemParams.Controls.Add(lengthLabel);
+
+            _lengthEdit = new ComboBox
+            {
+                Location = new Point(lengthLabel.Right, _addressEdit.Bottom + 6),
+                Width = 80
+            };
+            _lengthEdit.Items.AddRange(new []{ "256", "1024", "4096", "8192", "16384", "32768" });
+            _lengthEdit.SelectedIndex = 1;
+            panelMemParams.Controls.Add(_lengthEdit);
+
+            var button = new Button { Text = "Write", Location = new Point(_dataEdit.Left, _dataEdit.Bottom + 6), AutoSize = true, Width = 50 };
+            button.Click += (o, args) =>
+            {
+//                _theReferenceUsbDevice.Write(DecodeBits(_addressBits), DecodeBits(_dataBits));
+            };
+            panelMemParams.Controls.Add(button);
+
+            button = new Button { Text = "Read", Location = new Point(_dataEdit.Right - 50, _dataEdit.Bottom + 6), Width = 50 };
+            button.Click += (o, args) =>
+            {
+                //byte data;
+                //if (_theReferenceUsbDevice.Read(DecodeBits(_addressBits), out data))
+                //{
+                //    EncodeBits(_dataBits, data);
+                //}
+            };
+            panelMemParams.Controls.Add(button);
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Cont. RD", () =>
             {
@@ -192,7 +230,8 @@ namespace USB_Generic_HID_reference_application
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Block RD", ()=>
             {
-                var fillMe = new byte[1024];
+                var length = Convert.ToInt32(_lengthEdit.Items[_lengthEdit.SelectedIndex]);
+                var fillMe = new byte[length];
 
                 _theReferenceUsbDevice.BlockRead(_addressEdit.Value, fillMe);
 
@@ -310,6 +349,11 @@ namespace USB_Generic_HID_reference_application
             var item = (ToolStripMenuItem)sender;
             _theReferenceUsbDevice.SendCommand(0xFC, new int[] { rates[GetIntTag(item)] });
             toolStripStatusLabelScopeTriggerRate.Text = string.Format("Scope trigger: Pulsed/{0}", item.Text);
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
         }
     }
 }
