@@ -76,6 +76,24 @@ namespace USB_Generic_HID_reference_application
             return inputBuffer[1] == 0 ? string.Empty : Encoding.ASCII.GetString(inputBuffer, 2, inputBuffer[1]);
         }
 
+        public bool SendCommand(byte commandID, int[] args = null)
+        {
+            _outputBuffer[0] = 0;
+            _outputBuffer[1] = 0xF0;
+
+            if (args != null)
+            {
+                var n = 2;
+                foreach (var arg in args)
+                {
+                    _outputBuffer[n++] = (byte)(arg / 256);
+                    _outputBuffer[n++] = (byte)(arg & 255);
+                }
+            }
+
+            return writeRawReportToDevice(_outputBuffer);
+        }
+
         public bool SendStop()
         {
             _outputBuffer[0] = 0;

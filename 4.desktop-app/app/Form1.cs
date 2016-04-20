@@ -155,7 +155,7 @@ namespace USB_Generic_HID_reference_application
         private void Form1_Load(object sender, EventArgs e)
         {
             var x = 20;
-            var y = 40;
+            var y = 48;
 
             Controls.Add(new Label { Text = "Address", Location = new Point(x, y - 20), AutoSize = true });
             _addrhex = new Label() { Text = "0000", Location = new Point(x + 64, y - 20), AutoSize = true, Font = new Font("FixedSys", 10) };
@@ -374,6 +374,27 @@ namespace USB_Generic_HID_reference_application
         {
             var files = (string[])e.Data.GetData(DataFormats.FileDrop);
             LoadData(File.ReadAllBytes(files[0]));
+        }
+
+        private int GetIntTag(ToolStripMenuItem item)
+        {
+            return Convert.ToInt32(item.Tag);
+        }
+
+        private void ClockedScopeTrigger_Click(object sender, EventArgs e)
+        {
+            int[] rates = { 128, 4096, 16384 };
+            var item = (ToolStripMenuItem)sender;
+            _theReferenceUsbDevice.SendCommand(0xFC, new int[] { rates[GetIntTag(item)] });
+            toolStripStatusLabelScopeTriggerRate.Text = string.Format("Scope trigger: Clocked/{0}", item.Text);
+        }
+
+        private void PulsedScopeTrigger_Click(object sender, EventArgs e)
+        {
+            int[] rates = { 127, 4095, 16383 };
+            var item = (ToolStripMenuItem)sender;
+            _theReferenceUsbDevice.SendCommand(0xFC, new int[] { rates[GetIntTag(item)] });
+            toolStripStatusLabelScopeTriggerRate.Text = string.Format("Scope trigger: Pulsed/{0}", item.Text);
         }
     }
 }

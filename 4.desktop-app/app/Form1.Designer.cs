@@ -34,21 +34,39 @@ namespace USB_Generic_HID_reference_application
             this.components = new System.ComponentModel.Container();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.usbToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabelScopeTriggerRate = new System.Windows.Forms.ToolStripStatusLabel();
             this.debugTextBox = new System.Windows.Forms.TextBox();
             this.debugCollectionTimer = new System.Windows.Forms.Timer(this.components);
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBoxData = new System.Windows.Forms.GroupBox();
             this.listBoxData = new System.Windows.Forms.ListBox();
             this.flowLayoutPanelRadioChex = new System.Windows.Forms.FlowLayoutPanel();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openDataFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.scopeTriggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.clockedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fastToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mediumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.slowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pulsedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fastToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.mediumToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.slowToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBoxData.SuspendLayout();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.usbToolStripStatusLabel});
+            this.usbToolStripStatusLabel,
+            this.toolStripStatusLabelScopeTriggerRate});
             this.statusStrip1.Location = new System.Drawing.Point(0, 466);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(587, 22);
@@ -61,6 +79,12 @@ namespace USB_Generic_HID_reference_application
             this.usbToolStripStatusLabel.Name = "usbToolStripStatusLabel";
             this.usbToolStripStatusLabel.Size = new System.Drawing.Size(155, 17);
             this.usbToolStripStatusLabel.Text = "USB Device Status Unknown";
+            // 
+            // toolStripStatusLabelScopeTriggerRate
+            // 
+            this.toolStripStatusLabelScopeTriggerRate.Name = "toolStripStatusLabelScopeTriggerRate";
+            this.toolStripStatusLabelScopeTriggerRate.Size = new System.Drawing.Size(156, 17);
+            this.toolStripStatusLabelScopeTriggerRate.Text = "Scope trigger: Clocked/Slow";
             // 
             // debugTextBox
             // 
@@ -132,6 +156,127 @@ namespace USB_Generic_HID_reference_application
             this.flowLayoutPanelRadioChex.Size = new System.Drawing.Size(563, 79);
             this.flowLayoutPanelRadioChex.TabIndex = 24;
             // 
+            // menuStrip1
+            // 
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
+            this.optionsToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(587, 24);
+            this.menuStrip1.TabIndex = 25;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openDataFileToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.exitToolStripMenuItem});
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Text = "&File";
+            // 
+            // openDataFileToolStripMenuItem
+            // 
+            this.openDataFileToolStripMenuItem.Name = "openDataFileToolStripMenuItem";
+            this.openDataFileToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.openDataFileToolStripMenuItem.Text = "&Open data file";
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(145, 6);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.exitToolStripMenuItem.Text = "E&xit";
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.scopeTriggerToolStripMenuItem});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.optionsToolStripMenuItem.Text = "&Options";
+            // 
+            // scopeTriggerToolStripMenuItem
+            // 
+            this.scopeTriggerToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.clockedToolStripMenuItem,
+            this.pulsedToolStripMenuItem});
+            this.scopeTriggerToolStripMenuItem.Name = "scopeTriggerToolStripMenuItem";
+            this.scopeTriggerToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.scopeTriggerToolStripMenuItem.Text = "Scope trigger";
+            // 
+            // clockedToolStripMenuItem
+            // 
+            this.clockedToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fastToolStripMenuItem,
+            this.mediumToolStripMenuItem,
+            this.slowToolStripMenuItem});
+            this.clockedToolStripMenuItem.Name = "clockedToolStripMenuItem";
+            this.clockedToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.clockedToolStripMenuItem.Text = "Clocked";
+            // 
+            // fastToolStripMenuItem
+            // 
+            this.fastToolStripMenuItem.Name = "fastToolStripMenuItem";
+            this.fastToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
+            this.fastToolStripMenuItem.Tag = "0";
+            this.fastToolStripMenuItem.Text = "Fast";
+            this.fastToolStripMenuItem.Click += new System.EventHandler(this.ClockedScopeTrigger_Click);
+            // 
+            // mediumToolStripMenuItem
+            // 
+            this.mediumToolStripMenuItem.Name = "mediumToolStripMenuItem";
+            this.mediumToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
+            this.mediumToolStripMenuItem.Tag = "1";
+            this.mediumToolStripMenuItem.Text = "Medium";
+            // 
+            // slowToolStripMenuItem
+            // 
+            this.slowToolStripMenuItem.Name = "slowToolStripMenuItem";
+            this.slowToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
+            this.slowToolStripMenuItem.Tag = "2";
+            this.slowToolStripMenuItem.Text = "Slow";
+            // 
+            // pulsedToolStripMenuItem
+            // 
+            this.pulsedToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fastToolStripMenuItem1,
+            this.mediumToolStripMenuItem1,
+            this.slowToolStripMenuItem1});
+            this.pulsedToolStripMenuItem.Name = "pulsedToolStripMenuItem";
+            this.pulsedToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.pulsedToolStripMenuItem.Text = "Pulsed";
+            // 
+            // fastToolStripMenuItem1
+            // 
+            this.fastToolStripMenuItem1.Name = "fastToolStripMenuItem1";
+            this.fastToolStripMenuItem1.Size = new System.Drawing.Size(119, 22);
+            this.fastToolStripMenuItem1.Tag = "0";
+            this.fastToolStripMenuItem1.Text = "Fast";
+            this.fastToolStripMenuItem1.Click += new System.EventHandler(this.PulsedScopeTrigger_Click);
+            // 
+            // mediumToolStripMenuItem1
+            // 
+            this.mediumToolStripMenuItem1.Name = "mediumToolStripMenuItem1";
+            this.mediumToolStripMenuItem1.Size = new System.Drawing.Size(119, 22);
+            this.mediumToolStripMenuItem1.Tag = "1";
+            this.mediumToolStripMenuItem1.Text = "Medium";
+            this.mediumToolStripMenuItem1.Click += new System.EventHandler(this.PulsedScopeTrigger_Click);
+            // 
+            // slowToolStripMenuItem1
+            // 
+            this.slowToolStripMenuItem1.Name = "slowToolStripMenuItem1";
+            this.slowToolStripMenuItem1.Size = new System.Drawing.Size(119, 22);
+            this.slowToolStripMenuItem1.Tag = "2";
+            this.slowToolStripMenuItem1.Text = "Slow";
+            this.slowToolStripMenuItem1.Click += new System.EventHandler(this.PulsedScopeTrigger_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -141,6 +286,8 @@ namespace USB_Generic_HID_reference_application
             this.Controls.Add(this.groupBoxData);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.statusStrip1);
+            this.Controls.Add(this.menuStrip1);
+            this.MainMenuStrip = this.menuStrip1;
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(603, 526);
             this.Name = "Form1";
@@ -151,6 +298,8 @@ namespace USB_Generic_HID_reference_application
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBoxData.ResumeLayout(false);
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -166,6 +315,22 @@ namespace USB_Generic_HID_reference_application
         private GroupBox groupBoxData;
         private ListBox listBoxData;
         private FlowLayoutPanel flowLayoutPanelRadioChex;
+        private MenuStrip menuStrip1;
+        private ToolStripMenuItem fileToolStripMenuItem;
+        private ToolStripMenuItem openDataFileToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem exitToolStripMenuItem;
+        private ToolStripMenuItem optionsToolStripMenuItem;
+        private ToolStripMenuItem scopeTriggerToolStripMenuItem;
+        private ToolStripMenuItem clockedToolStripMenuItem;
+        private ToolStripMenuItem fastToolStripMenuItem;
+        private ToolStripMenuItem mediumToolStripMenuItem;
+        private ToolStripMenuItem slowToolStripMenuItem;
+        private ToolStripMenuItem pulsedToolStripMenuItem;
+        private ToolStripMenuItem fastToolStripMenuItem1;
+        private ToolStripMenuItem mediumToolStripMenuItem1;
+        private ToolStripMenuItem slowToolStripMenuItem1;
+        private ToolStripStatusLabel toolStripStatusLabelScopeTriggerRate;
     }
     }
 
