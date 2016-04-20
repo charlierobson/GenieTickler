@@ -41,6 +41,7 @@ namespace USB_Generic_HID_reference_application
     /// library to perform different types of read and write
     /// operations.
     /// </summary>
+    [System.ComponentModel.DesignerCategory("Code")]
     internal class UsbReferenceDevice : usbGenericHidCommunication
     {
         private readonly Action<string> _logger;

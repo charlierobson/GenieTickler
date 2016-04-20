@@ -70,6 +70,9 @@ namespace USB_Generic_HID_reference_application
 
         private delegate void ThreadSafeDebugUpdateDelegate(string debugText);
 
+        private BitEditPanel _addressEdit;
+        private BitEditPanel _dataEdit;
+
         private void ThreadSafeDebugUpdate(string debugText)
         {
             if (debugTextBox.InvokeRequired)
@@ -115,11 +118,6 @@ namespace USB_Generic_HID_reference_application
 			}
         }
 
-        private readonly CheckBox[] _addressBits = new CheckBox[16];
-        private readonly CheckBox[] _dataBits = new CheckBox[8];
-        private Label _addrhex;
-        private Label _datahex;
-
         private void CreateCheckButton(Control container, string buttonText, Action onBecomingChecked)
         {
             var checkBox = new CheckBox() { Text = buttonText, Appearance = Appearance.Button, MinimumSize = new Size(64, 23), Size = new Size(64, 23), TextAlign = ContentAlignment.MiddleCenter };
@@ -154,76 +152,37 @@ namespace USB_Generic_HID_reference_application
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            var x = 20;
-            var y = 48;
-
-            Controls.Add(new Label { Text = "Address", Location = new Point(x, y - 20), AutoSize = true });
-            _addrhex = new Label() { Text = "0000", Location = new Point(x + 64, y - 20), AutoSize = true, Font = new Font("FixedSys", 10) };
-            Controls.Add(_addrhex);
-            for (var i = 15; i > -1; --i)
+            _addressEdit = new BitEditPanel("Address", 16)
             {
-                var check = new CheckBox {Tag = i, Location = new Point(x, y), Size = new Size(16,16)};
-                check.CheckedChanged += (o, args) => { _addrhex.Text = DecodeBits(_addressBits).ToString("X4"); };
-
-                _addressBits[i] = check;
-                Controls.Add(check);
-
-                x += 16;
-            }
-
-            x += 32;
-
-            var button = new Button { Text = "Write", Location = new Point(x, y+20), AutoSize = true, Width = 50 };
-            button.Click += (o, args) =>
-            {
-                _theReferenceUsbDevice.WriteSingleByte(DecodeBits(_addressBits), DecodeBits(_dataBits));
+                BorderStyle = BorderStyle.FixedSingle,
+                Location = new Point(4, 4),
+                Size = new Size(264, 60)
             };
-            Controls.Add(button);
+            panelMemParams.Controls.Add(_addressEdit);
 
-            button = new Button { Text = "Read", Location = new Point(x + 75, y+20), Width = 50 };
-            button.Click += (o, args) =>
+            _dataEdit = new BitEditPanel("Data", 8)
             {
-                byte data = 0;
-                if (_theReferenceUsbDevice.ReadSingleByte(DecodeBits(_addressBits), ref data))
-                {
-                    EncodeBits(_dataBits, data);
-                }
+                BorderStyle = BorderStyle.FixedSingle,
+                Location = new Point(280, 4),
+                Size = new Size(140, 60)
             };
-            Controls.Add(button);
-
-            Controls.Add(new Label { Text = "Data", Location = new Point(x, y - 20), AutoSize = true });
-            _datahex = new Label() { Text = "00", Location = new Point(x + 60, y - 20), AutoSize = true, Font = new Font("FixedSys", 10) };
-            Controls.Add(_datahex);
-            for (var i = 7; i > -1; --i)
-            {
-                var check = new CheckBox { Tag = i, Location = new Point(x, y), Size = new Size(16, 16)};
-                check.CheckedChanged += (o, args) => { _datahex.Text = DecodeBits(_dataBits).ToString("X2"); };
-
-                _dataBits[i] = check;
-                Controls.Add(check);
-
-                x += 16;
-            }
+            panelMemParams.Controls.Add(_dataEdit);
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Cont. RD", () =>
             {
-                var address = DecodeBits(_addressBits);
-                _theReferenceUsbDevice.ContRead(address);
+                _theReferenceUsbDevice.ContRead(_addressEdit.Value);
             });
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Cont. WR", () =>
             {
-                var address = DecodeBits(_addressBits);
-                var data = DecodeBits(_dataBits);
-                _theReferenceUsbDevice.ContWrite(address, data);
+                _theReferenceUsbDevice.ContWrite(_addressEdit.Value, _dataEdit.Value);
             });
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Block WR", ()=>
             {
                 if (_data.Count() != 0)
                 {
-                    var address = DecodeBits(_addressBits);
-                    _theReferenceUsbDevice.BlockWrite(address, _data);
+                    _theReferenceUsbDevice.BlockWrite(_addressEdit.Value, _data);
                 }
                 else
                 {
@@ -233,27 +192,13 @@ namespace USB_Generic_HID_reference_application
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Block RD", ()=>
             {
-                var address = DecodeBits(_addressBits);
-
                 var fillMe = new byte[1024];
 
-                _theReferenceUsbDevice.BlockRead(address, fillMe);
+                _theReferenceUsbDevice.BlockRead(_addressEdit.Value, fillMe);
 
                 LoadData(fillMe);
             });
 		}
-
-        private static byte[] GetSimpleParallelData(int count)
-        {
-            byte clock = 0;
-            var data = new byte[count];
-            for (var i = 0; i < count; ++i)
-            {
-                data[i] = (byte)(((i & 255) / 2) | clock);
-                clock ^= 0x80;
-            }
-            return data;
-        }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
 		{
@@ -262,36 +207,6 @@ namespace USB_Generic_HID_reference_application
             _theReferenceUsbDevice.usbEvent -= usbEvent_receiver;
 		}
 
-        private static int DecodeBits(CheckBox[] bitCollection)
-        {
-            // assumes that the checkboxes in the collection are added in place postion order 0 -> N
-
-            var value = 0;
-            var bitMask = 1;
-
-            foreach (var bit in bitCollection)
-            {
-                if (bit.Checked)
-                    value |= bitMask;
-                bitMask <<= 1;
-            }
-
-            return value;
-        }
-
-        private void EncodeBits(CheckBox[] bitCollection, int data)
-        {
-            // assumes that the checkboxes in the collection are added in place postion order 0 -> N
-
-            var bitMask = 1;
-
-            foreach (var bit in bitCollection)
-            {
-                bit.Checked = (data & bitMask) != 0;
-                bitMask <<= 1;
-            }
-        }
-		
 		private static List<string> HexDump(byte[] bytes, int bytesPerLine = 16)
         {
             if (bytes == null) return null;
