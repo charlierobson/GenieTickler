@@ -80,7 +80,7 @@ namespace USB_Generic_HID_reference_application
         public bool SendCommand(byte commandID, int[] args = null)
         {
             _outputBuffer[0] = 0;
-            _outputBuffer[1] = 0xF0;
+            _outputBuffer[1] = commandID;
 
             if (args != null)
             {

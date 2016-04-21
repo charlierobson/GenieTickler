@@ -516,10 +516,14 @@ void processUsbCommands(void)
 				case 0xF0:
 					InitInterfacing();
 					busyFn = Unbusy;
+		            sprintf(debugString, "Unbusy");
+					debugOut(debugString);
 					break;
 
 				case 0xFC:
-					trigRate = ReceivedDataBuffer[1];
+					trigRate = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
+		            sprintf(debugString, "%04X", trigRate);
+					debugOut(debugString);
 					break;
 
 	            default:	// Unknown command received

@@ -152,6 +152,26 @@ namespace USB_Generic_HID_reference_application
             container.Controls.Add(checkBox);
         }
 
+        private void CreateButton(Control container, string buttonText, Action onClick)
+        {
+            var button = new Button() { Text = buttonText, MinimumSize = new Size(64, 23), Size = new Size(64, 23), TextAlign = ContentAlignment.MiddleCenter };
+            button.Click += (sender, args) =>
+            {
+                if (!_theReferenceUsbDevice.DeviceAttached)
+                {
+                    return;
+                }
+
+				foreach (var box in container.Controls.Cast<object>().OfType<CheckBox>().Where(box => box.Checked))
+				{
+					box.Checked = false;
+				}
+
+				onClick();
+            };
+            container.Controls.Add(button);
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             _addressEdit = new BitEditPanel("Address", 16)
@@ -216,7 +236,7 @@ namespace USB_Generic_HID_reference_application
                 _theReferenceUsbDevice.ContWrite(_addressEdit.Value, _dataEdit.Value);
             });
 
-            CreateCheckButton(flowLayoutPanelRadioChex, "Block WR", ()=>
+            CreateButton(flowLayoutPanelRadioChex, "Block WR", ()=>
             {
                 if (_data.Count() != 0)
                 {
@@ -228,7 +248,7 @@ namespace USB_Generic_HID_reference_application
                 }
             });
 
-            CreateCheckButton(flowLayoutPanelRadioChex, "Block RD", ()=>
+            CreateButton(flowLayoutPanelRadioChex, "Block RD", ()=>
             {
                 var length = Convert.ToInt32(_lengthEdit.Items[_lengthEdit.SelectedIndex]);
                 var fillMe = new byte[length];
@@ -236,6 +256,8 @@ namespace USB_Generic_HID_reference_application
                 _theReferenceUsbDevice.BlockRead(_addressEdit.Value, fillMe);
 
                 LoadData(fillMe);
+
+				File.WriteAllBytes("dump.bin", fillMe);
             });
 		}
 

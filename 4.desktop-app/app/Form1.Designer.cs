@@ -237,6 +237,7 @@ namespace USB_Generic_HID_reference_application
             this.mediumToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
             this.mediumToolStripMenuItem.Tag = "1";
             this.mediumToolStripMenuItem.Text = "Medium";
+            this.mediumToolStripMenuItem.Click += new System.EventHandler(this.ClockedScopeTrigger_Click);
             // 
             // slowToolStripMenuItem
             // 
@@ -244,6 +245,7 @@ namespace USB_Generic_HID_reference_application
             this.slowToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
             this.slowToolStripMenuItem.Tag = "2";
             this.slowToolStripMenuItem.Text = "Slow";
+            this.slowToolStripMenuItem.Click += new System.EventHandler(this.ClockedScopeTrigger_Click);
             // 
             // pulsedToolStripMenuItem
             // 
