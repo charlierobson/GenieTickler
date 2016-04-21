@@ -9,10 +9,11 @@
 #define NMREQ  LATBbits.LATB6
 #define NIORQ  LATBbits.LATB7
 
-
 // 12mhz instruction clock
 #define delayMicrosec() Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();Nop();
 #define delayHalfMicrosec() Nop();Nop();Nop();Nop();Nop();Nop();
+
+extern unsigned int gAddress;
 
 void InitInterfacing()
 {
@@ -54,7 +55,6 @@ void Write(unsigned int address, unsigned char data)
 	TRISD = 0xFF;
 }
 
-
 unsigned char Read(unsigned int address)
 {
 	unsigned char data;
@@ -72,7 +72,6 @@ unsigned char Read(unsigned int address)
 
 	return data;
 }
-
 
 unsigned int businessContRD(void)
 {
@@ -94,11 +93,10 @@ unsigned int businessContWR()
 	return VERY_BUSY;
 }
 
-int address;
 unsigned int businessExerciseAddr()
 {
-	++address;
-	ShiftOut(address);
+	++gAddress;
+	ShiftOut(gAddress);
 	NMREQ = 0;
 	NMREQ = 1;
 	return VERY_BUSY;

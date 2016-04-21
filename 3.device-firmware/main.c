@@ -502,10 +502,10 @@ void processUsbCommands(void)
 				case 0xE1:
 					busyFn = businessContWR;
 					InitInterfacing();
-					LATD = 0xff;
-					TRISD = 0x00;
 					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
 					ShiftOut(gAddress);
+					LATD = ReceivedDataBuffer[3];
+					TRISD = 0x00;
 					break;
 
 				case 0xE2:
