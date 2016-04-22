@@ -306,7 +306,7 @@ namespace USB_Generic_HID_reference_application
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(467, 567);
             this.Name = "Form1";
-            this.Text = "USB Generic HID reference application";
+            this.Text = "Genie Tickler";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
