@@ -14,6 +14,9 @@
 #define delayHalfMicrosec() Nop();Nop();Nop();Nop();Nop();Nop();
 
 extern unsigned int gAddress;
+extern unsigned int gLength;
+
+unsigned int gAddressOffset;
 
 void InitInterfacing()
 {
@@ -95,9 +98,12 @@ unsigned int businessContWR()
 
 unsigned int businessExerciseAddr()
 {
-	++gAddress;
-	ShiftOut(gAddress);
+	ShiftOut(gAddress + gAddressOffset);
 	NMREQ = 0;
 	NMREQ = 1;
+
+	++gAddressOffset;
+	gAddressOffset &= (gLength - 1);
+
 	return VERY_BUSY;
 }
