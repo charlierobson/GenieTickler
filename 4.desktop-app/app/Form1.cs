@@ -26,7 +26,6 @@
 //-----------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -204,22 +203,22 @@ namespace USB_Generic_HID_reference_application
                 Location = new Point(lengthLabel.Right, _addressEdit.Bottom + 6),
                 Width = 80
             };
-            _lengthEdit.Items.AddRange(new []{ "0x100", "0x200", "0x400", "0x800", "0x1000", "0x2000", "0x4000", "0x8000" });
+            _lengthEdit.Items.AddRange(new object[]{ "0x100", "0x200", "0x400", "0x800", "0x1000", "0x2000", "0x4000", "0x8000" });
             _lengthEdit.SelectedIndex = 2;
             panelMemParams.Controls.Add(_lengthEdit);
 
-            CreateButton(flowLayoutPanelRadioChex, "Write", () =>
-            {
-				_theReferenceUsbDevice.WriteByte(_addressEdit.Value, _dataEdit.Value);
-            });
-
-            CreateButton(flowLayoutPanelRadioChex, "Read", () =>
+            CreateButton(flowLayoutPanelRadioChex, "RD", () =>
             {
                 byte data = 0xff;
                 if (_theReferenceUsbDevice.ReadByte(_addressEdit.Value, ref data))
                 {
 					_dataEdit.Value = data;
                 }
+            });
+
+            CreateButton(flowLayoutPanelRadioChex, "WR", () =>
+            {
+				_theReferenceUsbDevice.WriteByte(_addressEdit.Value, _dataEdit.Value);
             });
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Cont. RD", () =>
@@ -230,18 +229,6 @@ namespace USB_Generic_HID_reference_application
             CreateCheckButton(flowLayoutPanelRadioChex, "Cont. WR", () =>
             {
                 _theReferenceUsbDevice.WriteContinuous(_addressEdit.Value, _dataEdit.Value);
-            });
-
-            CreateButton(flowLayoutPanelRadioChex, "Block WR", ()=>
-            {
-                if (_data.Count() != 0)
-                {
-                    _theReferenceUsbDevice.WriteBlock(_addressEdit.Value, _data);
-                }
-                else
-                {
-                    ThreadSafeDebugUpdate("No data to write.");
-                }
             });
 
             CreateButton(flowLayoutPanelRadioChex, "Block RD", ()=>
@@ -255,6 +242,18 @@ namespace USB_Generic_HID_reference_application
 
 				File.WriteAllBytes("dump.bin", fillMe);
             });
+
+            CreateButton(flowLayoutPanelRadioChex, "Block WR", ()=>
+            {
+                if (_data.Length != 0)
+                {
+                    _theReferenceUsbDevice.WriteBlock(_addressEdit.Value, _data);
+                }
+                else
+                {
+                    ThreadSafeDebugUpdate("No data to write.");
+                }
+            });
 		}
 
         protected override void OnFormClosing(FormClosingEventArgs e)
@@ -262,70 +261,6 @@ namespace USB_Generic_HID_reference_application
 			base.OnFormClosing(e);
 			
             _theReferenceUsbDevice.usbEvent -= usbEvent_receiver;
-		}
-
-		private static List<string> HexDump(byte[] bytes, int bytesPerLine = 16)
-        {
-            if (bytes == null) return null;
-
-            var bytesLength = bytes.Length;
-
-            var hexChars = "0123456789ABCDEF".ToCharArray();
-
-		    const int firstHexColumn = 8 + 3; // 8 characters for the address + 3 spaces
-
-            var firstCharColumn = firstHexColumn
-                + bytesPerLine * 3       // - 2 digit for the hexadecimal value and 1 space
-                + (bytesPerLine - 1) / 8 // - 1 extra space every 8 characters from the 9th
-                + 2;                  // 2 spaces 
-
-            var lineLength = firstCharColumn
-                + bytesPerLine           // - characters to show the ascii value
-                + Environment.NewLine.Length; // Carriage return and line feed (should normally be 2)
-
-            var line = (new string(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
-            var expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
-
-            var result = new List<string>();
-
-            for (var i = 0; i < bytesLength; i += bytesPerLine)
-            {
-                line[0] = hexChars[(i >> 28) & 0xF];
-                line[1] = hexChars[(i >> 24) & 0xF];
-                line[2] = hexChars[(i >> 20) & 0xF];
-                line[3] = hexChars[(i >> 16) & 0xF];
-                line[4] = hexChars[(i >> 12) & 0xF];
-                line[5] = hexChars[(i >> 8) & 0xF];
-                line[6] = hexChars[(i >> 4) & 0xF];
-                line[7] = hexChars[(i >> 0) & 0xF];
-
-                var hexColumn = firstHexColumn;
-                var charColumn = firstCharColumn;
-
-                for (var j = 0; j < bytesPerLine; j++)
-                {
-                    if (j > 0 && (j & 7) == 0) hexColumn++;
-                    if (i + j >= bytesLength)
-                    {
-                        line[hexColumn] = ' ';
-                        line[hexColumn + 1] = ' ';
-                        line[charColumn] = ' ';
-                    }
-                    else
-                    {
-                        var b = bytes[i + j];
-                        line[hexColumn] = hexChars[(b >> 4) & 0xF];
-                        line[hexColumn + 1] = hexChars[b & 0xF];
-                        line[charColumn] = b < 32 ? '.' : (char)b;
-                    }
-                    hexColumn += 3;
-                    charColumn++;
-                }
-
-                result.Add(new string(line));
-            }
-
-            return result;
 		}
 
         private void listBoxData_DragEnter(object sender, DragEventArgs e)
@@ -337,7 +272,7 @@ namespace USB_Generic_HID_reference_application
         {
             _data = data;
 
-            var hexDump = HexDump(_data);
+            var hexDump = HexDump.Dump(_data);
             listBoxData.Items.Clear();
             foreach (var line in hexDump) listBoxData.Items.Add(line);
         }
@@ -348,7 +283,7 @@ namespace USB_Generic_HID_reference_application
             LoadData(File.ReadAllBytes(files[0]));
         }
 
-        private int GetIntTag(ToolStripMenuItem item)
+        private static int GetIntTag(ToolStripItem item)
         {
             return Convert.ToInt32(item.Tag);
         }
@@ -357,7 +292,7 @@ namespace USB_Generic_HID_reference_application
         {
             int[] rates = { 128, 4096, 16384 };
             var item = (ToolStripMenuItem)sender;
-            _theReferenceUsbDevice.SendCommand(0xFC, new int[] { rates[GetIntTag(item)] });
+            _theReferenceUsbDevice.SendCommand(0xFC, new[] { rates[GetIntTag(item)] });
             toolStripStatusLabelScopeTriggerRate.Text = string.Format("Scope trigger: Clocked/{0}", item.Text);
         }
 
@@ -365,7 +300,7 @@ namespace USB_Generic_HID_reference_application
         {
             int[] rates = { 127, 4095, 16383 };
             var item = (ToolStripMenuItem)sender;
-            _theReferenceUsbDevice.SendCommand(0xFC, new int[] { rates[GetIntTag(item)] });
+            _theReferenceUsbDevice.SendCommand(0xFC, new[] { rates[GetIntTag(item)] });
             toolStripStatusLabelScopeTriggerRate.Text = string.Format("Scope trigger: Pulsed/{0}", item.Text);
         }
 

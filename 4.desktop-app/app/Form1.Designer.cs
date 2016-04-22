@@ -2,9 +2,9 @@
 using System.Windows.Forms;
 
 namespace USB_Generic_HID_reference_application
-    {
+{
     partial class Form1
-        {
+    {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -15,13 +15,13 @@ namespace USB_Generic_HID_reference_application
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
-            {
+        {
             if (disposing && (components != null))
-                {
+            {
                 components.Dispose();
-                }
-            base.Dispose(disposing);
             }
+            base.Dispose(disposing);
+        }
 
         #region Windows Form Designer generated code
 
@@ -30,7 +30,7 @@ namespace USB_Generic_HID_reference_application
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
-            {
+        {
             this.components = new System.ComponentModel.Container();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.usbToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -107,7 +107,7 @@ namespace USB_Generic_HID_reference_application
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.debugTextBox);
             this.groupBox2.Location = new System.Drawing.Point(15, 388);
@@ -119,8 +119,8 @@ namespace USB_Generic_HID_reference_application
             // 
             // groupBoxData
             // 
-            this.groupBoxData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.groupBoxData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxData.Controls.Add(this.listBoxData);
             this.groupBoxData.Location = new System.Drawing.Point(12, 197);
@@ -133,8 +133,8 @@ namespace USB_Generic_HID_reference_application
             // listBoxData
             // 
             this.listBoxData.AllowDrop = true;
-            this.listBoxData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.listBoxData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.listBoxData.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.listBoxData.FormattingEnabled = true;
@@ -149,7 +149,7 @@ namespace USB_Generic_HID_reference_application
             // 
             // flowLayoutPanelRadioChex
             // 
-            this.flowLayoutPanelRadioChex.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.flowLayoutPanelRadioChex.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.flowLayoutPanelRadioChex.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.flowLayoutPanelRadioChex.Location = new System.Drawing.Point(12, 142);
@@ -283,7 +283,7 @@ namespace USB_Generic_HID_reference_application
             // 
             // panelMemParams
             // 
-            this.panelMemParams.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.panelMemParams.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelMemParams.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelMemParams.Location = new System.Drawing.Point(12, 37);
@@ -318,7 +318,7 @@ namespace USB_Generic_HID_reference_application
             this.ResumeLayout(false);
             this.PerformLayout();
 
-            }
+        }
 
         #endregion
 
@@ -348,5 +348,5 @@ namespace USB_Generic_HID_reference_application
         private ToolStripStatusLabel toolStripStatusLabelScopeTriggerRate;
         private Panel panelMemParams;
     }
-    }
+}
 
