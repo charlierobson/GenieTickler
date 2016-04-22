@@ -97,30 +97,12 @@ namespace USB_Generic_HID_reference_application
 
         public bool SendStop()
         {
-            _outputBuffer[0] = 0;
-            _outputBuffer[1] = 0xF0;
-            return writeRawReportToDevice(_outputBuffer);
+			return SendCommand(0xF0);
         }
 
-        public bool WriteSingleByte(int address, int data)
+        public bool ReadByte(int address, ref byte data)
         {
-            _outputBuffer[0] = 0;
-            _outputBuffer[1] = 0x80; // - write to genie
-            _outputBuffer[2] = (byte)(address / 256);
-            _outputBuffer[3] = (byte)(address & 255);
-            _outputBuffer[4] = (byte)data;
-
-            return writeRawReportToDevice(_outputBuffer);
-        }
-
-        public bool ReadSingleByte(int address, ref byte data)
-        {
-            _outputBuffer[0] = 0;
-            _outputBuffer[1] = 0x81; // - read from genie
-            _outputBuffer[2] = (byte)(address / 256);
-            _outputBuffer[3] = (byte)(address & 255);
-
-            if (!writeRawReportToDevice(_outputBuffer)) return false;
+			if (!SendCommand(0x81, new int[]{ address })) return false;
 
             var inputBuffer = new byte[65];
 
@@ -130,45 +112,57 @@ namespace USB_Generic_HID_reference_application
             return true;
         }
 
-        public bool ContRead(int address)
+        public bool ReadBlock(int address, byte[] destinationByteArray)
+		{
+            _logger(string.Format("BlockRead: Data length {0} (${1:X4})", destinationByteArray.Length, destinationByteArray.Length));
+
+			var success = SendCommand(0x83, new int[]{ address, destinationByteArray.Length }); // - block read from genie
+            if (success)
+            {
+                var totalPackets = (destinationByteArray.Length + 63) / 64;
+
+				var packets = new byte[totalPackets][];
+
+                for (var packet = 0; packet < totalPackets && success; ++packet)
+                {
+					var p =  new byte[65];
+					packets[packet] = p;
+
+                    success = readSingleReportFromDevice(ref p);
+                }
+
+				var remaining = destinationByteArray.Length;
+				var offset = 0;
+				
+                for (var packet = 0; packet < totalPackets && success; ++packet)
+                {
+					var length = (remaining > 63) ? 64 : remaining;
+					remaining -= length;
+					
+					Array.Copy(packets[packet], 0, destinationByteArray, offset, length);
+					offset += 64;
+				}
+			}
+
+            if (!success) _logger("BlockRead: Bulk read from device failed");
+            return success;
+		}
+
+        public bool ReadContinuous(int address)
         {
-            var outputBuffer = new byte[65];
-
-            outputBuffer[0] = 0;
-            outputBuffer[1] = 0xE0;
-            outputBuffer[2] = (byte)(address / 256);
-            outputBuffer[3] = (byte)(address & 255);
-
-            return writeRawReportToDevice(outputBuffer);
+			return SendCommand(0xE0, new int[]{ address } );
         }
 
-        public bool ContWrite(int address, int data)
+        public bool WriteByte(int address, int data)
         {
-            var outputBuffer = new byte[65];
-
-            outputBuffer[0] = 0;
-            outputBuffer[1] = 0xE1;
-            outputBuffer[2] = (byte)(address / 256);
-            outputBuffer[3] = (byte)(address & 255);
-            outputBuffer[4] = (byte)data;
-
-            return writeRawReportToDevice(outputBuffer);
+			return SendCommand(0x80, new int[]{ address, data * 256 }) ; // - write to genie
         }
 
-        public bool BlockWrite(int address, byte[] data)
+        public bool WriteBlock(int address, byte[] data)
         {
-            var outputBuffer = new byte[65];
-
-            outputBuffer[0] = 0;
-            outputBuffer[1] = 0x82; // - block write to genie
-            outputBuffer[2] = (byte)(address / 256);
-            outputBuffer[3] = (byte)(address & 255);
-            outputBuffer[4] = (byte)(data.Length / 256);
-            outputBuffer[5] = (byte)(data.Length & 255);
-
             _logger(string.Format("BlockWrite: Data length {0} (${1:X4})", data.Length, data.Length));
 
-            var success = writeRawReportToDevice(outputBuffer);
+			var success = SendCommand(0x82, new int[]{address, data.Length});
             if (success)
             {
                 var offset = 0;
@@ -201,50 +195,9 @@ namespace USB_Generic_HID_reference_application
 			return success;
         }
 
-        public bool BlockRead(int address, byte[] destinationByteArray)
-		{
-            var buffer = new byte[65];
-
-            buffer[0] = 0;
-            buffer[1] = 0x83; // - block read from genie
-            buffer[2] = (byte)(address / 256);
-            buffer[3] = (byte)(address & 255);
-            buffer[4] = (byte)(destinationByteArray.Length / 256);
-            buffer[5] = (byte)(destinationByteArray.Length & 255);
-
-            _logger(string.Format("BlockRead: Data length {0} (${1:X4})", destinationByteArray.Length, destinationByteArray.Length));
-
-            var success = writeRawReportToDevice(buffer);
-            if (success)
-            {
-                var totalPackets = (destinationByteArray.Length + 63) / 64;
-
-				var packets = new byte[totalPackets][];
-
-                for (var packet = 0; packet < totalPackets && success; ++packet)
-                {
-					var p =  new byte[65];
-					packets[packet] = p;
-
-                    success = readSingleReportFromDevice(ref p);
-                }
-
-				var remaining = destinationByteArray.Length;
-				var offset = 0;
-				
-                for (var packet = 0; packet < totalPackets && success; ++packet)
-                {
-					var length = (remaining > 63) ? 64 : remaining;
-					remaining -= length;
-					
-					Array.Copy(packets[packet], 0, destinationByteArray, offset, length);
-					offset += 64;
-				}
-			}
-
-            if (!success) _logger("BlockRead: Bulk read from device failed");
-            return success;
-		}
-
+        public bool WriteContinuous(int address, int data)
+        {
+			return SendCommand(0xE1, new int[]{ address, data * 256 } );
+        }
     }
 }

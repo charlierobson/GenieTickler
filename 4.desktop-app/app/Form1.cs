@@ -204,43 +204,39 @@ namespace USB_Generic_HID_reference_application
                 Location = new Point(lengthLabel.Right, _addressEdit.Bottom + 6),
                 Width = 80
             };
-            _lengthEdit.Items.AddRange(new []{ "256", "1024", "4096", "8192", "16384", "32768" });
-            _lengthEdit.SelectedIndex = 1;
+            _lengthEdit.Items.AddRange(new []{ "0x100", "0x200", "0x400", "0x800", "0x1000", "0x2000", "0x4000", "0x8000" });
+            _lengthEdit.SelectedIndex = 2;
             panelMemParams.Controls.Add(_lengthEdit);
 
-            var button = new Button { Text = "Write", Location = new Point(_dataEdit.Left, _dataEdit.Bottom + 6), AutoSize = true, Width = 50 };
-            button.Click += (o, args) =>
+            CreateButton(flowLayoutPanelRadioChex, "Write", () =>
             {
-//                _theReferenceUsbDevice.Write(DecodeBits(_addressBits), DecodeBits(_dataBits));
-            };
-            panelMemParams.Controls.Add(button);
+				_theReferenceUsbDevice.WriteByte(_addressEdit.Value, _dataEdit.Value);
+            });
 
-            button = new Button { Text = "Read", Location = new Point(_dataEdit.Right - 50, _dataEdit.Bottom + 6), Width = 50 };
-            button.Click += (o, args) =>
+            CreateButton(flowLayoutPanelRadioChex, "Read", () =>
             {
-                //byte data;
-                //if (_theReferenceUsbDevice.Read(DecodeBits(_addressBits), out data))
-                //{
-                //    EncodeBits(_dataBits, data);
-                //}
-            };
-            panelMemParams.Controls.Add(button);
+                byte data = 0xff;
+                if (_theReferenceUsbDevice.ReadByte(_addressEdit.Value, ref data))
+                {
+					_dataEdit.Value = data;
+                }
+            });
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Cont. RD", () =>
             {
-                _theReferenceUsbDevice.ContRead(_addressEdit.Value);
+                _theReferenceUsbDevice.ReadContinuous(_addressEdit.Value);
             });
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Cont. WR", () =>
             {
-                _theReferenceUsbDevice.ContWrite(_addressEdit.Value, _dataEdit.Value);
+                _theReferenceUsbDevice.WriteContinuous(_addressEdit.Value, _dataEdit.Value);
             });
 
             CreateButton(flowLayoutPanelRadioChex, "Block WR", ()=>
             {
                 if (_data.Count() != 0)
                 {
-                    _theReferenceUsbDevice.BlockWrite(_addressEdit.Value, _data);
+                    _theReferenceUsbDevice.WriteBlock(_addressEdit.Value, _data);
                 }
                 else
                 {
@@ -253,7 +249,7 @@ namespace USB_Generic_HID_reference_application
                 var length = Convert.ToInt32(_lengthEdit.Items[_lengthEdit.SelectedIndex]);
                 var fillMe = new byte[length];
 
-                _theReferenceUsbDevice.BlockRead(_addressEdit.Value, fillMe);
+                _theReferenceUsbDevice.ReadBlock(_addressEdit.Value, fillMe);
 
                 LoadData(fillMe);
 
