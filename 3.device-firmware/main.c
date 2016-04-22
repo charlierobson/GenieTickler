@@ -436,7 +436,7 @@ void processUsbCommands(void)
 
 					Write(address, data);
 
-	            	sprintf(debugString, "%04X <= %02X", address, data);
+	            	sprintf(debugString, "Byte $%02X written to $%04X", data, address);
 					debugOut(debugString);
 				}
             	break;
@@ -454,17 +454,17 @@ void processUsbCommands(void)
 						USBInHandle = HIDTxPacket(HID_EP,(BYTE*)&ToSendDataBuffer[0],64);
 					}
 
-	            	sprintf(debugString, "%04X => %02X", address, data);
+	            	sprintf(debugString, "Read $%02X from $%04X", data, address);
 					debugOut(debugString);
 				}
             	break;
 
-	            case 0x82:	// BLOCK WRITE -> GENIE
+	            case 0x82:
 				{
 					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
 					gLength = ((int)ReceivedDataBuffer[3] << 8) + ReceivedDataBuffer[4];
 
-		            sprintf(debugString, "%04X <= [%04x]", gAddress, gLength);
+		            sprintf(debugString, "Block write $%04X..$%04x incl.", gAddress, gAddress + gLength - 1);
 					debugOut(debugString);
 
 					bulkFunction = MemWriteMultiple;
@@ -475,12 +475,12 @@ void processUsbCommands(void)
 		        }
             	break;
 
-	            case 0x83:	// BLOCK READ <- GENIE
+	            case 0x83:
 				{
 					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
 					gLength = ((int)ReceivedDataBuffer[3] << 8) + ReceivedDataBuffer[4];
 
-		            sprintf(debugString, "%04X => [%04x]", gAddress, gLength);
+		            sprintf(debugString, "Block read $%04X..$%04x incl.", gAddress, gAddress + gLength - 1);
 					debugOut(debugString);
 
 					bulkFunction = MemReadMultiple;
@@ -492,37 +492,45 @@ void processUsbCommands(void)
             	break;
 
 				case 0xE0:
-					busyFn = businessContRD;
 					InitInterfacing();
 					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
 					ShiftOut(gAddress);
 					TRISD = 0xFF; // should be input as genie will be driving the bus - ding ding!
+		            sprintf(debugString, "E0 Repeat read from $%04X", gAddress);
+					debugOut(debugString);
+					busyFn = businessContRD;
 					break;
 
 				case 0xE1:
-					busyFn = businessContWR;
 					InitInterfacing();
 					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
 					ShiftOut(gAddress);
 					LATD = ReceivedDataBuffer[3];
 					TRISD = 0x00;
+		            sprintf(debugString, "E1 Repeat write $%04X <= $%02X", gAddress, ReceivedDataBuffer[3]);
+					debugOut(debugString);
+					busyFn = businessContWR;
 					break;
 
 				case 0xE2:
-					busyFn = businessExerciseAddr;
 					InitInterfacing();
+					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
+					gLength = ((int)ReceivedDataBuffer[3] << 8) + ReceivedDataBuffer[4];
+		            sprintf(debugString, "E2 Addr exercise $%04X..$%04X incl.", gAddress, gAddress + gLength - 1);
+					debugOut(debugString);
+					busyFn = businessExerciseAddr;
 					break;
 
 				case 0xF0:
 					InitInterfacing();
-					busyFn = Unbusy;
 		            sprintf(debugString, "Unbusy");
 					debugOut(debugString);
+					busyFn = Unbusy;
 					break;
 
 				case 0xFC:
 					trigRate = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
-		            sprintf(debugString, "%04X", trigRate);
+		            sprintf(debugString, "Config\nTR %04X", trigRate);
 					debugOut(debugString);
 					break;
 
