@@ -72,7 +72,7 @@ namespace USB_Generic_HID_reference_application
 
         private BitEditPanel _dataEdit;
 
-        private ComboBox _lengthEdit;
+        private LengthEditCombo _lengthEdit;
 
         private void ThreadSafeDebugUpdate(string debugText)
         {
@@ -198,13 +198,11 @@ namespace USB_Generic_HID_reference_application
             };
             panelMemParams.Controls.Add(lengthLabel);
 
-            _lengthEdit = new ComboBox
+            _lengthEdit = new LengthEditCombo
             {
                 Location = new Point(lengthLabel.Right, _addressEdit.Bottom + 6),
                 Width = 80
             };
-            _lengthEdit.Items.AddRange(new object[]{ "0x100", "0x200", "0x400", "0x800", "0x1000", "0x2000", "0x4000", "0x8000" });
-            _lengthEdit.SelectedIndex = 2;
             panelMemParams.Controls.Add(_lengthEdit);
 
             CreateButton(flowLayoutPanelRadioChex, "RD", () =>
@@ -231,10 +229,19 @@ namespace USB_Generic_HID_reference_application
                 _theReferenceUsbDevice.WriteContinuous(_addressEdit.Value, _dataEdit.Value);
             });
 
+            CreateCheckButton(flowLayoutPanelRadioChex, "Loop add.", () =>
+            {
+                _theReferenceUsbDevice.LoopAddr(_addressEdit.Value, _lengthEdit.Value);
+            });
+
+            CreateCheckButton(flowLayoutPanelRadioChex, "Loop dat.", () =>
+            {
+                _theReferenceUsbDevice.LoopData();
+            });
+
             CreateButton(flowLayoutPanelRadioChex, "Block RD", ()=>
             {
-                var length = Convert.ToInt32(_lengthEdit.Items[_lengthEdit.SelectedIndex]);
-                var fillMe = new byte[length];
+                var fillMe = new byte[_lengthEdit.Value];
 
                 _theReferenceUsbDevice.ReadBlock(_addressEdit.Value, fillMe);
 

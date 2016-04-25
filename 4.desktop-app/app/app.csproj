@@ -70,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BitEditPanel.cs" />
+    <Compile Include="LengthEditCombo.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

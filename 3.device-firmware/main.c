@@ -315,6 +315,7 @@ void applicationInit(void)
 extern unsigned int businessContRD();
 extern unsigned int businessContWR();
 extern unsigned int businessExerciseAddr();
+extern unsigned int businessExerciseData();
 
 
 // bulk handlers
@@ -521,12 +522,24 @@ void processUsbCommands(void)
 					busyFn = businessExerciseAddr;
 					break;
 
+				case 0xE3:
+					InitInterfacing();
+					TRISD = 0x00;
+		            sprintf(debugString, "E3 Data exercise");
+					debugOut(debugString);
+					busyFn = businessExerciseData;
+					break;
+
+				;
+
 				case 0xF0:
 					InitInterfacing();
 		            sprintf(debugString, "Unbusy");
 					debugOut(debugString);
 					busyFn = Unbusy;
 					break;
+
+				;
 
 				case 0xFC:
 					trigRate = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];

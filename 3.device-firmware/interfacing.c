@@ -107,3 +107,9 @@ unsigned int businessExerciseAddr()
 
 	return VERY_BUSY;
 }
+
+unsigned int businessExerciseData()
+{
+	PORTD++;
+	return VERY_BUSY;
+}

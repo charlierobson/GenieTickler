@@ -55,9 +55,6 @@ namespace USB_Generic_HID_reference_application
         // Collect debug information from the device
         public string CollectDebug()
         {
-            // Collect debug information from USB device
-            //Debug.WriteLine("Reference Application -> Collecting debug information from device");
-
             // Declare our input buffer
             var inputBuffer = new byte[65];
 
@@ -199,5 +196,15 @@ namespace USB_Generic_HID_reference_application
         {
 			return SendCommand(0xE1, new int[]{ address, data * 256 } );
         }
-    }
+
+        public bool LoopAddr(int address, int length)
+        {
+			return SendCommand(0xE2, new int[]{ address, length } );
+        }
+
+        public bool LoopData()
+        {
+			return SendCommand(0xE3);
+        }
+	}
 }

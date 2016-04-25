@@ -107,7 +107,7 @@ namespace USB_Generic_HID_reference_application
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.debugTextBox);
             this.groupBox2.Location = new System.Drawing.Point(15, 388);
@@ -119,13 +119,13 @@ namespace USB_Generic_HID_reference_application
             // 
             // groupBoxData
             // 
-            this.groupBoxData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.groupBoxData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxData.Controls.Add(this.listBoxData);
-            this.groupBoxData.Location = new System.Drawing.Point(12, 197);
+            this.groupBoxData.Location = new System.Drawing.Point(12, 225);
             this.groupBoxData.Name = "groupBoxData";
-            this.groupBoxData.Size = new System.Drawing.Size(430, 188);
+            this.groupBoxData.Size = new System.Drawing.Size(430, 160);
             this.groupBoxData.TabIndex = 23;
             this.groupBoxData.TabStop = false;
             this.groupBoxData.Text = "Data";
@@ -133,8 +133,8 @@ namespace USB_Generic_HID_reference_application
             // listBoxData
             // 
             this.listBoxData.AllowDrop = true;
-            this.listBoxData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.listBoxData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.listBoxData.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.listBoxData.FormattingEnabled = true;
@@ -142,19 +142,19 @@ namespace USB_Generic_HID_reference_application
             this.listBoxData.ItemHeight = 14;
             this.listBoxData.Location = new System.Drawing.Point(3, 16);
             this.listBoxData.Name = "listBoxData";
-            this.listBoxData.Size = new System.Drawing.Size(421, 169);
+            this.listBoxData.Size = new System.Drawing.Size(421, 141);
             this.listBoxData.TabIndex = 0;
             this.listBoxData.DragDrop += new System.Windows.Forms.DragEventHandler(this.listBoxData_DragDrop);
             this.listBoxData.DragEnter += new System.Windows.Forms.DragEventHandler(this.listBoxData_DragEnter);
             // 
             // flowLayoutPanelRadioChex
             // 
-            this.flowLayoutPanelRadioChex.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.flowLayoutPanelRadioChex.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.flowLayoutPanelRadioChex.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.flowLayoutPanelRadioChex.Location = new System.Drawing.Point(12, 142);
             this.flowLayoutPanelRadioChex.Name = "flowLayoutPanelRadioChex";
-            this.flowLayoutPanelRadioChex.Size = new System.Drawing.Size(430, 49);
+            this.flowLayoutPanelRadioChex.Size = new System.Drawing.Size(430, 77);
             this.flowLayoutPanelRadioChex.TabIndex = 24;
             // 
             // menuStrip1
@@ -192,7 +192,7 @@ namespace USB_Generic_HID_reference_application
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -283,7 +283,7 @@ namespace USB_Generic_HID_reference_application
             // 
             // panelMemParams
             // 
-            this.panelMemParams.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.panelMemParams.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelMemParams.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelMemParams.Location = new System.Drawing.Point(12, 37);
