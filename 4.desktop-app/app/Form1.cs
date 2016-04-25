@@ -83,7 +83,7 @@ namespace USB_Generic_HID_reference_application
             }
             else
             {
-                debugTextBox.AppendText(string.Format("{0}\n", debugText.TrimEnd()));
+                debugTextBox.AppendText($"{debugText.TrimEnd()}\n");
             }
         }
 
@@ -114,7 +114,7 @@ namespace USB_Generic_HID_reference_application
 				// Display the debug information
 				if (debugText != string.Empty)
 				{
-					debugTextBox.AppendText(string.Format("{0}\n", debugText.TrimEnd()));
+					debugTextBox.AppendText($"{debugText.TrimEnd()}\n");
 				}
 			}
         }
@@ -300,7 +300,7 @@ namespace USB_Generic_HID_reference_application
             int[] rates = { 128, 4096, 16384 };
             var item = (ToolStripMenuItem)sender;
             _theReferenceUsbDevice.SendCommand(0xFC, new[] { rates[GetIntTag(item)] });
-            toolStripStatusLabelScopeTriggerRate.Text = string.Format("Scope trigger: Clocked/{0}", item.Text);
+            toolStripStatusLabelScopeTriggerRate.Text = $"Scope trigger: Clocked/{item.Text}";
         }
 
         private void PulsedScopeTrigger_Click(object sender, EventArgs e)
@@ -308,7 +308,7 @@ namespace USB_Generic_HID_reference_application
             int[] rates = { 127, 4095, 16383 };
             var item = (ToolStripMenuItem)sender;
             _theReferenceUsbDevice.SendCommand(0xFC, new[] { rates[GetIntTag(item)] });
-            toolStripStatusLabelScopeTriggerRate.Text = string.Format("Scope trigger: Pulsed/{0}", item.Text);
+            toolStripStatusLabelScopeTriggerRate.Text = $"Scope trigger: Pulsed/{item.Text}";
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
