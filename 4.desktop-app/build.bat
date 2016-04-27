@@ -1,3 +1,7 @@
+setlocal
+
 set props=/property:Configuration=Release
 
-\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe %props% "%~dp0desktop-app.sln"
+set msbindir=C:\Program Files (x86)\MSBuild\14.0\Bin\
+
+"%msbindir%MSBuild.exe" %props% "%~dp0desktop-app.sln"

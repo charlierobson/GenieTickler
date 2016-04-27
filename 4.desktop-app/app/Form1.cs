@@ -173,6 +173,8 @@ namespace USB_Generic_HID_reference_application
 
         private void Form1_Load(object sender, EventArgs e)
         {
+			SuspendLayout();
+
             _addressEdit = new BitEditPanel("Address", 16)
             {
                 BorderStyle = BorderStyle.FixedSingle,
@@ -261,6 +263,8 @@ namespace USB_Generic_HID_reference_application
                     ThreadSafeDebugUpdate("No data to write.");
                 }
             });
+
+			ResumeLayout();
 		}
 
         protected override void OnFormClosing(FormClosingEventArgs e)
