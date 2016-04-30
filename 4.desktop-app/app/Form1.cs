@@ -27,8 +27,8 @@
 
 using System;
 using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 // ReSharper disable LocalizableElement
 
@@ -64,7 +64,15 @@ namespace USB_Generic_HID_reference_application
         // Create an instance of the USB reference device
         private readonly UsbReferenceDevice _theReferenceUsbDevice;
 
+        private byte[] _data = new byte[0];
+
         private delegate void ThreadSafeDebugUpdateDelegate(string debugText);
+
+        private BitEditPanel _addressEdit;
+
+        private BitEditPanel _dataEdit;
+
+        private LengthEditCombo _lengthEdit;
 
         private void ThreadSafeDebugUpdate(string debugText)
         {
@@ -75,7 +83,7 @@ namespace USB_Generic_HID_reference_application
             }
             else
             {
-                debugTextBox.AppendText(string.Format("{0}\n", debugText.TrimEnd()));
+                debugTextBox.AppendText($"{debugText.TrimEnd()}\n");
             }
         }
 
@@ -106,15 +114,10 @@ namespace USB_Generic_HID_reference_application
 				// Display the debug information
 				if (debugText != string.Empty)
 				{
-					debugTextBox.AppendText(string.Format("{0}\n", debugText.TrimEnd()));
+					debugTextBox.AppendText($"{debugText.TrimEnd()}\n");
 				}
 			}
         }
-
-        private readonly CheckBox[] _addressBits = new CheckBox[16];
-        private readonly CheckBox[] _dataBits = new CheckBox[8];
-        private Label _addrhex;
-        private Label _datahex;
 
         private void CreateCheckButton(Control container, string buttonText, Action onBecomingChecked)
         {
@@ -133,7 +136,6 @@ namespace USB_Generic_HID_reference_application
                 {
                     foreach (var box in container.Controls.Cast<object>().OfType<CheckBox>().Where(box => box != senderAsCheckBox && box.Checked))
                     {
-                        _theReferenceUsbDevice.SendStop();
                         box.Checked = false;
                     }
 
@@ -143,106 +145,127 @@ namespace USB_Generic_HID_reference_application
                 else
                 {
                     senderAsCheckBox.BackColor = DefaultBackColor;
-                }
+                        _theReferenceUsbDevice.SendStop();
+				}
             };
             container.Controls.Add(checkBox);
         }
 
+        private void CreateButton(Control container, string buttonText, Action onClick)
+        {
+            var button = new Button() { Text = buttonText, MinimumSize = new Size(64, 23), Size = new Size(64, 23), TextAlign = ContentAlignment.MiddleCenter };
+            button.Click += (sender, args) =>
+            {
+                if (!_theReferenceUsbDevice.DeviceAttached)
+                {
+                    return;
+                }
+
+				foreach (var box in container.Controls.Cast<object>().OfType<CheckBox>().Where(box => box.Checked))
+				{
+					box.Checked = false;
+				}
+
+				onClick();
+            };
+            container.Controls.Add(button);
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
-            var x = 20;
-            var y = 40;
+			SuspendLayout();
 
-            Controls.Add(new Label { Text = "Address", Location = new Point(x, y - 20), AutoSize = true });
-            _addrhex = new Label() { Text = "0000", Location = new Point(x + 64, y - 20), AutoSize = true, Font = new Font("FixedSys", 10) };
-            Controls.Add(_addrhex);
-            for (var i = 15; i > -1; --i)
+            _addressEdit = new BitEditPanel("Address", 16)
             {
-                var check = new CheckBox {Tag = i, Location = new Point(x, y), Size = new Size(16,16)};
-                check.CheckedChanged += (o, args) => { _addrhex.Text = DecodeBits(_addressBits).ToString("X4"); };
-
-                _addressBits[i] = check;
-                Controls.Add(check);
-
-                x += 16;
-            }
-
-            x += 32;
-
-            var button = new Button { Text = "Write", Location = new Point(x, y+20), AutoSize = true, Width = 50 };
-            button.Click += (o, args) =>
-            {
-                _theReferenceUsbDevice.WriteSingleByte(DecodeBits(_addressBits), DecodeBits(_dataBits));
+                BorderStyle = BorderStyle.FixedSingle,
+                Location = new Point(4, 4),
+                Size = new Size(264, 60)
             };
-            Controls.Add(button);
+            panelMemParams.Controls.Add(_addressEdit);
 
-            button = new Button { Text = "Read", Location = new Point(x + 75, y+20), Width = 50 };
-            button.Click += (o, args) =>
+            _dataEdit = new BitEditPanel("Data", 8)
             {
-                byte data = 0;
-                if (_theReferenceUsbDevice.ReadSingleByte(DecodeBits(_addressBits), ref data))
+                BorderStyle = BorderStyle.FixedSingle,
+                Location = new Point(_addressEdit.Right + 16, 4),
+                Size = new Size(140, 60)
+            };
+            panelMemParams.Controls.Add(_dataEdit);
+
+            var lengthLabel = new Label
+            {
+                Text = "Length",
+                TextAlign = ContentAlignment.MiddleRight,
+                AutoSize = true,
+                Location = new Point(4, _addressEdit.Bottom + 8)
+            };
+            panelMemParams.Controls.Add(lengthLabel);
+
+            _lengthEdit = new LengthEditCombo
+            {
+                Location = new Point(lengthLabel.Right, _addressEdit.Bottom + 6),
+                Width = 80
+            };
+            panelMemParams.Controls.Add(_lengthEdit);
+
+            CreateButton(flowLayoutPanelRadioChex, "RD", () =>
+            {
+                byte data = 0xff;
+                if (_theReferenceUsbDevice.ReadByte(_addressEdit.Value, ref data))
                 {
-                    EncodeBits(_dataBits, data);
+					_dataEdit.Value = data;
                 }
-            };
-            Controls.Add(button);
+            });
 
-            Controls.Add(new Label { Text = "Data", Location = new Point(x, y - 20), AutoSize = true });
-            _datahex = new Label() { Text = "00", Location = new Point(x + 60, y - 20), AutoSize = true, Font = new Font("FixedSys", 10) };
-            Controls.Add(_datahex);
-            for (var i = 7; i > -1; --i)
+            CreateButton(flowLayoutPanelRadioChex, "WR", () =>
             {
-                var check = new CheckBox { Tag = i, Location = new Point(x, y), Size = new Size(16, 16)};
-                check.CheckedChanged += (o, args) => { _datahex.Text = DecodeBits(_dataBits).ToString("X2"); };
-
-                _dataBits[i] = check;
-                Controls.Add(check);
-
-                x += 16;
-            }
+				_theReferenceUsbDevice.WriteByte(_addressEdit.Value, _dataEdit.Value);
+            });
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Cont. RD", () =>
             {
-                var address = DecodeBits(_addressBits);
-                _theReferenceUsbDevice.ContRead(address);
+                _theReferenceUsbDevice.ReadContinuous(_addressEdit.Value);
             });
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Cont. WR", () =>
             {
-                var address = DecodeBits(_addressBits);
-                var data = DecodeBits(_dataBits);
-                _theReferenceUsbDevice.ContWrite(address, data);
+                _theReferenceUsbDevice.WriteContinuous(_addressEdit.Value, _dataEdit.Value);
             });
 
-            CreateCheckButton(flowLayoutPanelRadioChex, "Block WR", ()=>
+            CreateCheckButton(flowLayoutPanelRadioChex, "Loop add.", () =>
             {
-                var address = DecodeBits(_addressBits);
-                var data = GetSimpleParallelData(1024);
-                _theReferenceUsbDevice.BlockWrite(address, data);
+                _theReferenceUsbDevice.LoopAddr(_addressEdit.Value, _lengthEdit.Value);
             });
 
-            CreateCheckButton(flowLayoutPanelRadioChex, "Block RD", ()=>
+            CreateCheckButton(flowLayoutPanelRadioChex, "Loop dat.", () =>
             {
-                var address = DecodeBits(_addressBits);
-                var fillMe = Enumerable.Repeat((byte)0xFF, count: 1024).ToArray();
-                if (_theReferenceUsbDevice.BlockRead(address, fillMe))
+                _theReferenceUsbDevice.LoopData();
+            });
+
+            CreateButton(flowLayoutPanelRadioChex, "Block RD", ()=>
+            {
+                var fillMe = new byte[_lengthEdit.Value];
+
+                _theReferenceUsbDevice.ReadBlock(_addressEdit.Value, fillMe);
+
+                LoadData(fillMe);
+
+				File.WriteAllBytes("dump.bin", fillMe);
+            });
+
+            CreateButton(flowLayoutPanelRadioChex, "Block WR", ()=>
+            {
+                if (_data.Length != 0)
                 {
-                    ThreadSafeDebugUpdate(HexDump(fillMe));
+                    _theReferenceUsbDevice.WriteBlock(_addressEdit.Value, _data);
+                }
+                else
+                {
+                    ThreadSafeDebugUpdate("No data to write.");
                 }
             });
-		}
 
-        private static byte[] GetSimpleParallelData(int count)
-        {
-            byte clock = 0;
-            var data = new byte[count];
-            for (var i = 0; i < count; ++i)
-            {
-                data[i] = (byte)(((i & 255) / 2) | clock);
-                clock ^= 0x80;
-            }
-            return data;
-        }
+			ResumeLayout();
+		}
 
         protected override void OnFormClosing(FormClosingEventArgs e)
 		{
@@ -251,95 +274,50 @@ namespace USB_Generic_HID_reference_application
             _theReferenceUsbDevice.usbEvent -= usbEvent_receiver;
 		}
 
-        private static int DecodeBits(CheckBox[] bitCollection)
+        private void listBoxData_DragEnter(object sender, DragEventArgs e)
         {
-            // assumes that the checkboxes in the collection are added in place postion order 0 -> N
-
-            var value = 0;
-            var bitMask = 1;
-
-            foreach (var bit in bitCollection)
-            {
-                if (bit.Checked)
-                    value |= bitMask;
-                bitMask <<= 1;
-            }
-
-            return value;
+            e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
         }
 
-        private void EncodeBits(CheckBox[] bitCollection, int data)
+        private void LoadData(byte[] data)
         {
-            // assumes that the checkboxes in the collection are added in place postion order 0 -> N
+            _data = data;
 
-            var bitMask = 1;
-
-            foreach (var bit in bitCollection)
-            {
-                bit.Checked = (data & bitMask) != 0;
-                bitMask <<= 1;
-            }
+            var hexDump = HexDump.Dump(_data);
+            listBoxData.Items.Clear();
+            foreach (var line in hexDump) listBoxData.Items.Add(line);
         }
-		
-		private static string HexDump(byte[] bytes, int bytesPerLine = 16)
+
+        private void listBoxData_DragDrop(object sender, DragEventArgs e)
         {
-            if (bytes == null) return "<null>";
+            var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            LoadData(File.ReadAllBytes(files[0]));
+        }
 
-            var bytesLength = bytes.Length;
+        private static int GetIntTag(ToolStripItem item)
+        {
+            return Convert.ToInt32(item.Tag);
+        }
 
-            var hexChars = "0123456789ABCDEF".ToCharArray();
+        private void ClockedScopeTrigger_Click(object sender, EventArgs e)
+        {
+            int[] rates = { 128, 4096, 16384 };
+            var item = (ToolStripMenuItem)sender;
+            _theReferenceUsbDevice.SendCommand(0xFC, new[] { rates[GetIntTag(item)] });
+            toolStripStatusLabelScopeTriggerRate.Text = $"Scope trigger: Clocked/{item.Text}";
+        }
 
-		    const int firstHexColumn = 8 + 3; // 8 characters for the address + 3 spaces
+        private void PulsedScopeTrigger_Click(object sender, EventArgs e)
+        {
+            int[] rates = { 127, 4095, 16383 };
+            var item = (ToolStripMenuItem)sender;
+            _theReferenceUsbDevice.SendCommand(0xFC, new[] { rates[GetIntTag(item)] });
+            toolStripStatusLabelScopeTriggerRate.Text = $"Scope trigger: Pulsed/{item.Text}";
+        }
 
-            var firstCharColumn = firstHexColumn
-                + bytesPerLine * 3       // - 2 digit for the hexadecimal value and 1 space
-                + (bytesPerLine - 1) / 8 // - 1 extra space every 8 characters from the 9th
-                + 2;                  // 2 spaces 
-
-            var lineLength = firstCharColumn
-                + bytesPerLine           // - characters to show the ascii value
-                + Environment.NewLine.Length; // Carriage return and line feed (should normally be 2)
-
-            var line = (new string(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
-            var expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
-            var result = new StringBuilder(expectedLines * lineLength);
-
-            for (var i = 0; i < bytesLength; i += bytesPerLine)
-            {
-                line[0] = hexChars[(i >> 28) & 0xF];
-                line[1] = hexChars[(i >> 24) & 0xF];
-                line[2] = hexChars[(i >> 20) & 0xF];
-                line[3] = hexChars[(i >> 16) & 0xF];
-                line[4] = hexChars[(i >> 12) & 0xF];
-                line[5] = hexChars[(i >> 8) & 0xF];
-                line[6] = hexChars[(i >> 4) & 0xF];
-                line[7] = hexChars[(i >> 0) & 0xF];
-
-                var hexColumn = firstHexColumn;
-                var charColumn = firstCharColumn;
-
-                for (var j = 0; j < bytesPerLine; j++)
-                {
-                    if (j > 0 && (j & 7) == 0) hexColumn++;
-                    if (i + j >= bytesLength)
-                    {
-                        line[hexColumn] = ' ';
-                        line[hexColumn + 1] = ' ';
-                        line[charColumn] = ' ';
-                    }
-                    else
-                    {
-                        var b = bytes[i + j];
-                        line[hexColumn] = hexChars[(b >> 4) & 0xF];
-                        line[hexColumn + 1] = hexChars[b & 0xF];
-                        line[charColumn] = b < 32 ? '.' : (char)b;
-                    }
-                    hexColumn += 3;
-                    charColumn++;
-                }
-                result.Append(line);
-            }
-            return result.ToString();
-		}
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
     }
 }

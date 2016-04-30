@@ -82,8 +82,8 @@
 #define mStatusLED0			LATCbits.LATC1
 #define mStatusLED1			LATCbits.LATC2
 
-#define mInitScopeTaps()	TRISA |= 0b00001000;
-#define mScopeTrigger		LATAbits.LATA3
+#define mInitScopeTaps()	TRISA &= 0b11111110;
+#define mScopeTrigger		LATAbits.LATA0
 
 
 #define mStatusLED0_on()	mStatusLED0 = 1;
