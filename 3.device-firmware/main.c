@@ -236,7 +236,7 @@ void main(void)
 	
 	sprintf(debugString, "USB Device Initialised");
 	debugOut(debugString);
-	
+
     // Show that we are up and running
     mStatusLED0_on();
 	
@@ -272,7 +272,7 @@ static void initialisePic(void)
 	// Configure ports as inputs as we don't want to hurt the genie bus	
 	TRISA = 0b11111111;
 	TRISB = 0b11111111;
-	TRISC = 0b11111111;
+	TRISC = 0b10111111;
 	TRISD = 0b11111111;
 	TRISE = 0b11111111;
 
@@ -305,9 +305,10 @@ void applicationInit(void)
 	InitInterfacing();
 
 	// 115200 with 20mhz crystal w/PLL : FOSC = 48mhz
-	OpenUSART(	(USART_TX_INT_OFF | USART_RX_INT_OFF |
+/*	OpenUSART(	(USART_TX_INT_OFF | USART_RX_INT_OFF |
 				 USART_ASYNCH_MODE | USART_EIGHT_BIT | USART_CONT_RX |
 				 USART_BRGH_HIGH), 25);
+*/
 }
 
 

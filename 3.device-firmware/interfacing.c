@@ -23,13 +23,12 @@ unsigned int gAddressOffset;
 
 void InitInterfacing()
 {
-	// RD, WR, MEM & IORQ = 1
-	LATB = 0xF0;
-	TRISB = 0x03;		// SCL/SDA inputs
+	LATB = 0xF0;		// RD, WR, MEM & IORQ = 1
+	TRISB = 0x03;		// SCL/SDA are inputs
 
 	TRISD = 0xff;
 
-	SSPADD = (120/1)-1; // Rate
+	SSPADD = (120/1)-1; // Rate - 100KHz
 
 	OpenI2C(MASTER, SLEW_ON);
 	IdleI2C();
@@ -38,7 +37,7 @@ void InitInterfacing()
 	IdleI2C();
 	WriteI2C(0x40);
 	IdleI2C();
-	WriteI2C(0); // iodira
+	WriteI2C(0); // iodira register
 	IdleI2C();
 	WriteI2C(0); // all out
 	IdleI2C();
@@ -50,14 +49,18 @@ void InitInterfacing()
 }
 
 
+// these need to be global so the inline asm can correctly access them
 unsigned char gpa, gpb;
+unsigned char ah, al;
 
 void addrToGP(unsigned int address)
 {
-	int i;
-	unsigned char ah = address >> 8;
-	unsigned char al = address & 255;
+	ah = address >> 8;
+	al = address & 255;
+
 _asm
+	movlb al			// bank select. hopefully gpa,gpb,al,ah are all in the same bank ;)
+
 	RRCF al,1,1
 	RLCF gpb,1,1
 	RRCF al,1,1
@@ -103,17 +106,18 @@ _endasm
 
 void ShiftOut(unsigned int address)
 {
+	// mutate the bits
 	addrToGP(address);
 
 	StartI2C();
 	IdleI2C();
 	WriteI2C(0x40);
 	IdleI2C();
-	WriteI2C(0x12); // gpioa
+	WriteI2C(0x12); // select gpioa register
 	IdleI2C();
 	WriteI2C(gpa);
 	IdleI2C();
-	// (auto-increment to gpiob)
+	// (auto-increment register to gpiob)
 	WriteI2C(gpb);
 	IdleI2C();
 	StopI2C();

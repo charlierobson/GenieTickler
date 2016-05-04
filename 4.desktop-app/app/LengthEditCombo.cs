@@ -9,7 +9,7 @@ namespace USB_Generic_HID_reference_application
     {
 		public LengthEditCombo()
 		{
-            Items.AddRange(new object[]{ "0x100", "0x200", "0x400", "0x800", "0x1000", "0x2000", "0x4000", "0x8000" });
+            Items.AddRange(new object[]{ "0x100", "0x200", "0x400", "0x800", "0x1000", "0x2000", "0x4000", "0x8000", "0x10000" });
             SelectedIndex = 2;
 		}
 

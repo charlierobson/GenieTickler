@@ -18,6 +18,7 @@
 *.map
 *.cod
 *.lst
+*.bin
 Microchip Solutions v2011-07-14/
 
 ## Ignore Visual Studio temporary files, build results, and
