@@ -189,11 +189,11 @@
 
 #elif defined (SMB_BOARD)
 
-	#define mInitHWSMB() 		LATC = 0; TRISC = 0b11111001;
+	#define mInitHWSMB() 		LATA = 0; TRISA = 0b11111001;
 
-	#define sw2                 PORTCbits.RC0
-    #define mLED_1              LATCbits.LATC1
-    #define mLED_2              LATCbits.LATC2
+	#define sw2                 PORTAbits.RA0
+    #define mLED_1              LATAbits.LATA1
+    #define mLED_2              LATAbits.LATA2
 
     #define mInitAllSwitches()
     #define mInitAllLEDs()

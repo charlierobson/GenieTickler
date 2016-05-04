@@ -293,8 +293,7 @@ static void initialisePic(void)
 // Application specific device initialisation
 void applicationInit(void)
 {
-	// Initialise the status LEDs
-	mInitStatusLeds();
+	mInitHW();
 	mInitScopeTaps();
 
 	mStatusLED0_on();

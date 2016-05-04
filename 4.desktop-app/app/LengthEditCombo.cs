@@ -17,7 +17,7 @@ namespace USB_Generic_HID_reference_application
 		{
 			get
 			{
-                return Convert.ToInt32(Items[SelectedIndex]);
+                return Convert.ToInt32((string)Items[SelectedIndex], 16);
 			}
 		}
 	}

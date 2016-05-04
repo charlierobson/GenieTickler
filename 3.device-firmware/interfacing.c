@@ -1,5 +1,8 @@
 #include "HardwareProfile.h"
 #include <delays.h>
+#include <p18f4550.h>
+#include <pconfig.h>
+#include <i2c.h>
 
 #define SHIFTCLK LATBbits.LATB2
 #define SHIFTDAT LATBbits.LATB3
@@ -20,26 +23,41 @@ unsigned int gAddressOffset;
 
 void InitInterfacing()
 {
-	SHIFTCLK = 0;
+	SSPADD = (12/1)-1; // Rate
+	OpenI2C(MASTER, SLEW_ON);
+	IdleI2C();
 
-	// RD, WR, MEM & IORQ = 1, SHIFTCLK,DATA = 0
+	// RD, WR, MEM & IORQ = 1
 	LATB = 0xF0;
-	TRISB = 0x03;
+	TRISB = 0x03;		// SCL/SDA input
 
 	TRISD = 0xff;
 }
 
+
 void ShiftOut(unsigned int address)
 {
-	int i;
+	StartI2C();
+	IdleI2C();
+	WriteI2C(0x40);
+	IdleI2C();
+	WriteI2C(0);
+	IdleI2C();
+	putcI2C(address / 256);
+	IdleI2C();
+	StopI2C();
+	IdleI2C();
 
-	for(i = 0; i < 16; ++i)
-	{
-		SHIFTDAT = address & 1;
-		SHIFTCLK = 1;
-		address >>= 1;
-		SHIFTCLK = 0;
-	}
+	StartI2C();
+	IdleI2C();
+	WriteI2C(0x40);
+	IdleI2C();
+	WriteI2C(1);
+	IdleI2C();
+	WriteI2C(address & 255);
+	IdleI2C();
+	StopI2C();
+	IdleI2C();
 }
 
 void Write(unsigned int address, unsigned char data)
