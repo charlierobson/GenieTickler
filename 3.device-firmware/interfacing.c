@@ -29,8 +29,9 @@ void InitInterfacing()
 
 	TRISD = 0xff;
 
-	OpenI2C(MASTER, SLEW_ON);
 	SSPADD = (120/1)-1; // Rate
+
+	OpenI2C(MASTER, SLEW_ON);
 	IdleI2C();
 
 	StartI2C();
@@ -39,20 +40,70 @@ void InitInterfacing()
 	IdleI2C();
 	WriteI2C(0); // iodira
 	IdleI2C();
-	WriteI2C(0); // all outputs
+	WriteI2C(0); // all out
 	IdleI2C();
-	// auto-increments to iodirb
-	WriteI2C(0); // all outputs
+	// (auto-increment register to iodirb)
+	WriteI2C(0); // all out
 	IdleI2C();
 	StopI2C();
 	IdleI2C();
 }
 
-long a;
+
+unsigned char gpa, gpb;
+
+void addrToGP(unsigned int address)
+{
+	int i;
+	unsigned char ah = address >> 8;
+	unsigned char al = address & 255;
+_asm
+	RRCF al,1,1
+	RLCF gpb,1,1
+	RRCF al,1,1
+	RRCF gpa,1,1
+
+	RRCF al,1,1
+	RLCF gpb,1,1
+	RRCF al,1,1
+	RRCF gpa,1,1
+
+	RRCF al,1,1
+	RLCF gpb,1,1
+	RRCF al,1,1
+	RRCF gpa,1,1
+
+	RRCF al,1,1
+	RLCF gpb,1,1
+	RRCF al,1,1
+	RRCF gpa,1,1
+
+	RRCF ah,1,1
+	RLCF gpb,1,1
+	RRCF ah,1,1
+	RRCF gpa,1,1
+
+	RRCF ah,1,1
+	RLCF gpb,1,1
+	RRCF ah,1,1
+	RRCF gpa,1,1
+
+	RRCF ah,1,1
+	RLCF gpb,1,1
+	RRCF ah,1,1
+	RRCF gpa,1,1
+
+	RRCF ah,1,1
+	RLCF gpb,1,1
+	RRCF ah,1,1
+	RRCF gpa,1,1
+_endasm
+}
+
 
 void ShiftOut(unsigned int address)
 {
-	++a;
+	addrToGP(address);
 
 	StartI2C();
 	IdleI2C();
@@ -60,10 +111,10 @@ void ShiftOut(unsigned int address)
 	IdleI2C();
 	WriteI2C(0x12); // gpioa
 	IdleI2C();
-	WriteI2C(address / 256);
+	WriteI2C(gpa);
 	IdleI2C();
-	// auto-increments to gpiob
-	WriteI2C(address & 255);
+	// (auto-increment to gpiob)
+	WriteI2C(gpb);
 	IdleI2C();
 	StopI2C();
 	IdleI2C();

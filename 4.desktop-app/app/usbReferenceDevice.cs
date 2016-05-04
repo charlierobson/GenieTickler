@@ -197,10 +197,21 @@ namespace USB_Generic_HID_reference_application
 			return SendCommand(0xE1, new int[]{ address, data * 256 } );
         }
 
-        public bool LoopAddr(int address, int length)
+        public bool AddrLoop(int address, int length)
         {
 			return SendCommand(0xE2, new int[]{ address, length } );
         }
+
+		public bool AddrInc()
+		{
+			return SendCommand(0xE4);
+		}
+
+		public bool AddrDec()
+		{
+			return SendCommand(0xE5);
+		}
+
 
         public bool LoopData()
         {
