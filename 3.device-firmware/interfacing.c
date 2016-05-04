@@ -23,37 +23,46 @@ unsigned int gAddressOffset;
 
 void InitInterfacing()
 {
-	SSPADD = (12/1)-1; // Rate
-	OpenI2C(MASTER, SLEW_ON);
-	IdleI2C();
-
 	// RD, WR, MEM & IORQ = 1
 	LATB = 0xF0;
-	TRISB = 0x03;		// SCL/SDA input
+	TRISB = 0x03;		// SCL/SDA inputs
 
 	TRISD = 0xff;
-}
 
+	OpenI2C(MASTER, SLEW_ON);
+	SSPADD = (120/1)-1; // Rate
+	IdleI2C();
 
-void ShiftOut(unsigned int address)
-{
 	StartI2C();
 	IdleI2C();
 	WriteI2C(0x40);
 	IdleI2C();
-	WriteI2C(0);
+	WriteI2C(0); // iodira
 	IdleI2C();
-	putcI2C(address / 256);
+	WriteI2C(0); // all outputs
+	IdleI2C();
+	// auto-increments to iodirb
+	WriteI2C(0); // all outputs
 	IdleI2C();
 	StopI2C();
 	IdleI2C();
+}
+
+long a;
+
+void ShiftOut(unsigned int address)
+{
+	++a;
 
 	StartI2C();
 	IdleI2C();
 	WriteI2C(0x40);
 	IdleI2C();
-	WriteI2C(1);
+	WriteI2C(0x12); // gpioa
 	IdleI2C();
+	WriteI2C(address / 256);
+	IdleI2C();
+	// auto-increments to gpiob
 	WriteI2C(address & 255);
 	IdleI2C();
 	StopI2C();

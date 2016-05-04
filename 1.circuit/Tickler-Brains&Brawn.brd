@@ -58,7 +58,7 @@
 <layer number="48" name="Document" color="7" fill="1" visible="no" active="yes"/>
 <layer number="49" name="Reference" color="7" fill="1" visible="no" active="yes"/>
 <layer number="50" name="dxf" color="7" fill="1" visible="no" active="yes"/>
-<layer number="51" name="tDocu" color="7" fill="1" visible="no" active="yes"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="52" name="bDocu" color="7" fill="1" visible="no" active="yes"/>
 <layer number="53" name="tGND_GNDA" color="7" fill="9" visible="no" active="no"/>
 <layer number="54" name="bGND_GNDA" color="1" fill="9" visible="no" active="no"/>
@@ -106,6 +106,7 @@
 <text x="19.05" y="44.45" size="1.778" layer="51">1</text>
 <text x="60.96" y="38.1" size="1.27" layer="27" font="vector" ratio="10" rot="R90" align="center-left">Scope trig
 TX</text>
+<text x="49.53" y="69.85" size="1.778" layer="51" rot="R90" align="center-left">A0</text>
 </plain>
 <libraries>
 <library name="rcl">
