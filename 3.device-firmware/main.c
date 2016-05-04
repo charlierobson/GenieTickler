@@ -529,6 +529,22 @@ void processUsbCommands(void)
 					busyFn = businessExerciseData;
 					break;
 
+				case 0xE4:
+					InitInterfacing();
+					++gAddress;
+		            sprintf(debugString, "E4 Addr Inc -> $%04X", gAddress);
+					debugOut(debugString);
+					ShiftOut(gAddress);
+					break;
+
+				case 0xE5:
+					InitInterfacing();
+					--gAddress;
+		            sprintf(debugString, "E5 Addr Dec -> $%04X", gAddress);
+					debugOut(debugString);
+					ShiftOut(gAddress);
+					break;
+
 				;
 
 				case 0xF0:

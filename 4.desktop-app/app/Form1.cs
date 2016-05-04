@@ -233,13 +233,23 @@ namespace USB_Generic_HID_reference_application
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Loop add.", () =>
             {
-                _theReferenceUsbDevice.LoopAddr(_addressEdit.Value, _lengthEdit.Value);
+                _theReferenceUsbDevice.AddrLoop(_addressEdit.Value, _lengthEdit.Value);
             });
 
             CreateCheckButton(flowLayoutPanelRadioChex, "Loop dat.", () =>
             {
                 _theReferenceUsbDevice.LoopData();
             });
+
+            CreateButton(flowLayoutPanelRadioChex, "++Addr.", ()=>
+            {
+				_theReferenceUsbDevice.AddrInc();
+			});
+
+            CreateButton(flowLayoutPanelRadioChex, "--Addr.", ()=>
+            {
+				_theReferenceUsbDevice.AddrDec();
+			});
 
             CreateButton(flowLayoutPanelRadioChex, "Block RD", ()=>
             {
