@@ -34,16 +34,66 @@ void InitInterfacing()
 	TRISD = 0xff;
 }
 
+unsigned char gpa, gpb;
+void addrToGP(unsigned int address)
+{
+	int i;
+	unsigned char ah = address >> 8;
+	unsigned char al = address & 255;
+_asm
+	RRCF al,1,1
+	RLCF gpb,1,1
+	RRCF al,1,1
+	RRCF gpa,1,1
+
+	RRCF al,1,1
+	RLCF gpb,1,1
+	RRCF al,1,1
+	RRCF gpa,1,1
+
+	RRCF al,1,1
+	RLCF gpb,1,1
+	RRCF al,1,1
+	RRCF gpa,1,1
+
+	RRCF al,1,1
+	RLCF gpb,1,1
+	RRCF al,1,1
+	RRCF gpa,1,1
+
+	RRCF ah,1,1
+	RLCF gpb,1,1
+	RRCF ah,1,1
+	RRCF gpa,1,1
+
+	RRCF ah,1,1
+	RLCF gpb,1,1
+	RRCF ah,1,1
+	RRCF gpa,1,1
+
+	RRCF ah,1,1
+	RLCF gpb,1,1
+	RRCF ah,1,1
+	RRCF gpa,1,1
+
+	RRCF ah,1,1
+	RLCF gpb,1,1
+	RRCF ah,1,1
+	RRCF gpa,1,1
+_endasm
+}
 
 void ShiftOut(unsigned int address)
 {
+	addrToGP(address);
+
 	StartI2C();
 	IdleI2C();
 	WriteI2C(0x40);
 	IdleI2C();
 	WriteI2C(0);
 	IdleI2C();
-	putcI2C(address / 256);
+	WriteI2C(gpa);
 	IdleI2C();
 	StopI2C();
 	IdleI2C();
@@ -54,7 +104,7 @@ void ShiftOut(unsigned int address)
 	IdleI2C();
 	WriteI2C(1);
 	IdleI2C();
-	WriteI2C(address & 255);
+	WriteI2C(gpb);
 	IdleI2C();
 	StopI2C();
 	IdleI2C();
