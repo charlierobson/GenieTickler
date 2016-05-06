@@ -241,15 +241,10 @@ namespace USB_Generic_HID_reference_application
                 _theReferenceUsbDevice.LoopData();
             });
 
-            CreateButton(flowLayoutPanelRadioChex, "++Addr.", ()=>
+            CreateButton(flowLayoutPanelRadioChex, "Fill", () =>
             {
-				_theReferenceUsbDevice.AddrInc();
-			});
-
-            CreateButton(flowLayoutPanelRadioChex, "--Addr.", ()=>
-            {
-				_theReferenceUsbDevice.AddrDec();
-			});
+                _theReferenceUsbDevice.Fill(_addressEdit.Value, _lengthEdit.Value, _dataEdit.Value);
+            });
 
             CreateButton(flowLayoutPanelRadioChex, "Block RD", ()=>
             {
@@ -257,7 +252,7 @@ namespace USB_Generic_HID_reference_application
 
                 _theReferenceUsbDevice.ReadBlock(_addressEdit.Value, fillMe);
 
-                LoadData(fillMe);
+                LoadData(fillMe, _addressEdit.Value);
 
 				File.WriteAllBytes("dump.bin", fillMe);
             });
@@ -289,11 +284,11 @@ namespace USB_Generic_HID_reference_application
             e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
         }
 
-        private void LoadData(byte[] data)
+        private void LoadData(byte[] data, int address)
         {
             _data = data;
 
-            var hexDump = HexDump.Dump(_data);
+            var hexDump = HexDump.Dump(_data, address);
             listBoxData.Items.Clear();
             foreach (var line in hexDump) listBoxData.Items.Add(line);
         }
@@ -301,7 +296,7 @@ namespace USB_Generic_HID_reference_application
         private void listBoxData_DragDrop(object sender, DragEventArgs e)
         {
             var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            LoadData(File.ReadAllBytes(files[0]));
+            LoadData(File.ReadAllBytes(files[0]), 0);
         }
 
         private static int GetIntTag(ToolStripItem item)

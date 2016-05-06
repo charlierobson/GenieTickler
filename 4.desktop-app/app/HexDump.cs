@@ -6,7 +6,7 @@ namespace USB_Generic_HID_reference_application
     public static class HexDump
     {
 
-        public static List<string> Dump(byte[] bytes, int bytesPerLine = 16)
+        public static List<string> Dump(byte[] bytes, int address, int bytesPerLine = 16)
         {
             if (bytes == null) return null;
 
@@ -31,14 +31,15 @@ namespace USB_Generic_HID_reference_application
 
             for (var i = 0; i < bytesLength; i += bytesPerLine)
             {
-                line[0] = hexChars[(i >> 28) & 0xF];
-                line[1] = hexChars[(i >> 24) & 0xF];
-                line[2] = hexChars[(i >> 20) & 0xF];
-                line[3] = hexChars[(i >> 16) & 0xF];
-                line[4] = hexChars[(i >> 12) & 0xF];
-                line[5] = hexChars[(i >> 8) & 0xF];
-                line[6] = hexChars[(i >> 4) & 0xF];
-                line[7] = hexChars[(i >> 0) & 0xF];
+                var addr = i + address;
+                line[0] = hexChars[(addr >> 28) & 0xF];
+                line[1] = hexChars[(addr >> 24) & 0xF];
+                line[2] = hexChars[(addr >> 20) & 0xF];
+                line[3] = hexChars[(addr >> 16) & 0xF];
+                line[4] = hexChars[(addr >> 12) & 0xF];
+                line[5] = hexChars[(addr >> 8) & 0xF];
+                line[6] = hexChars[(addr >> 4) & 0xF];
+                line[7] = hexChars[(addr >> 0) & 0xF];
 
                 var hexColumn = firstHexColumn;
                 var charColumn = firstCharColumn;

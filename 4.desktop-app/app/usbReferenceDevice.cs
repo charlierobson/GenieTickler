@@ -202,7 +202,12 @@ namespace USB_Generic_HID_reference_application
 			return SendCommand(0xE2, new int[]{ address, length } );
         }
 
-		public bool AddrInc()
+        public bool LoopData()
+        {
+            return SendCommand(0xE3);
+        }
+
+        public bool AddrInc()
 		{
 			return SendCommand(0xE4);
 		}
@@ -212,10 +217,9 @@ namespace USB_Generic_HID_reference_application
 			return SendCommand(0xE5);
 		}
 
-
-        public bool LoopData()
+        public bool Fill(int address, int length, int data)
         {
-			return SendCommand(0xE3);
+            return SendCommand(0xE6, new int[] { address, length, data });
         }
-	}
+    }
 }

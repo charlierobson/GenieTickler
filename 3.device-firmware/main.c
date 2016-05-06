@@ -194,6 +194,7 @@ char debugString[64];
 // global pointer for multibyte operations
 int gAddress;
 int gLength;
+int gData;
 
 // function pointer to bulk reception processor
 void (*bulkFunction)(void) = NULL;
@@ -544,6 +545,16 @@ void processUsbCommands(void)
 		            sprintf(debugString, "E5 Addr Dec -> $%04X", gAddress);
 					debugOut(debugString);
 					ShiftOut(gAddress);
+					break;
+
+				case 0xE6:
+					InitInterfacing();
+					gAddress = ((int)ReceivedDataBuffer[1] << 8) + ReceivedDataBuffer[2];
+					gLength = ((int)ReceivedDataBuffer[3] << 8) + ReceivedDataBuffer[4];
+					gData = ((int)ReceivedDataBuffer[5] << 8) + ReceivedDataBuffer[6];
+		            sprintf(debugString, "E6 Fill $%04X -> $%04X = %02X", gAddress, gAddress+gLength-1, gData);
+					debugOut(debugString);
+					{ int i; for(i = gAddress; i < gAddress + gLength; ++i) { Write(i, gData); } }
 					break;
 
 				;

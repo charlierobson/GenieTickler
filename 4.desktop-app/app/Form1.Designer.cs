@@ -68,7 +68,7 @@ namespace USB_Generic_HID_reference_application
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.usbToolStripStatusLabel,
             this.toolStripStatusLabelScopeTriggerRate});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 507);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 532);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(451, 22);
             this.statusStrip1.SizingGrip = false;
@@ -110,7 +110,7 @@ namespace USB_Generic_HID_reference_application
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.debugTextBox);
-            this.groupBox2.Location = new System.Drawing.Point(15, 388);
+            this.groupBox2.Location = new System.Drawing.Point(15, 413);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(427, 99);
             this.groupBox2.TabIndex = 22;
@@ -123,9 +123,9 @@ namespace USB_Generic_HID_reference_application
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxData.Controls.Add(this.listBoxData);
-            this.groupBoxData.Location = new System.Drawing.Point(12, 225);
+            this.groupBoxData.Location = new System.Drawing.Point(12, 254);
             this.groupBoxData.Name = "groupBoxData";
-            this.groupBoxData.Size = new System.Drawing.Size(430, 160);
+            this.groupBoxData.Size = new System.Drawing.Size(430, 156);
             this.groupBoxData.TabIndex = 23;
             this.groupBoxData.TabStop = false;
             this.groupBoxData.Text = "Data";
@@ -142,7 +142,7 @@ namespace USB_Generic_HID_reference_application
             this.listBoxData.ItemHeight = 14;
             this.listBoxData.Location = new System.Drawing.Point(3, 16);
             this.listBoxData.Name = "listBoxData";
-            this.listBoxData.Size = new System.Drawing.Size(421, 141);
+            this.listBoxData.Size = new System.Drawing.Size(421, 137);
             this.listBoxData.TabIndex = 0;
             this.listBoxData.DragDrop += new System.Windows.Forms.DragEventHandler(this.listBoxData_DragDrop);
             this.listBoxData.DragEnter += new System.Windows.Forms.DragEventHandler(this.listBoxData_DragEnter);
@@ -154,7 +154,7 @@ namespace USB_Generic_HID_reference_application
             this.flowLayoutPanelRadioChex.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.flowLayoutPanelRadioChex.Location = new System.Drawing.Point(12, 142);
             this.flowLayoutPanelRadioChex.Name = "flowLayoutPanelRadioChex";
-            this.flowLayoutPanelRadioChex.Size = new System.Drawing.Size(430, 77);
+            this.flowLayoutPanelRadioChex.Size = new System.Drawing.Size(430, 106);
             this.flowLayoutPanelRadioChex.TabIndex = 24;
             // 
             // menuStrip1
@@ -295,7 +295,7 @@ namespace USB_Generic_HID_reference_application
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(451, 529);
+            this.ClientSize = new System.Drawing.Size(451, 554);
             this.Controls.Add(this.flowLayoutPanelRadioChex);
             this.Controls.Add(this.groupBoxData);
             this.Controls.Add(this.groupBox2);
